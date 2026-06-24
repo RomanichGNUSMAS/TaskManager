@@ -5,7 +5,7 @@ const { createKey } = require("../utils/jwt");
 
 exports.AuthRepository = class {
     static async signup(rawData){
-        const found = await userModel.findOne({ email:rawData })
+        const found = await userModel.findOne({ email:rawData.email })
         if(found) return null;
         const user = new userModel({...rawData,password:(await hashPassword(rawData.password))});
         return await user.save();
