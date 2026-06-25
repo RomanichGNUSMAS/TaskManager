@@ -18,7 +18,7 @@ exports.ProjectController = class {
         res.status(201).json(result);
     }
 
-    static updateProject(req,res,next) {
+    static async updateProject(req,res,next) {
         const { id } = req.params;
         const token = req.headers.authorization.split(' ')[1];
         const result = await ProjectService.updateProject(token, req.body, id);
