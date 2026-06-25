@@ -6,6 +6,8 @@ const app = express();
 app.use(express.json());
 
 app.use('/auth',authRouter);
+
+//must be checked!!!!!!!!!!
 app.use('/projects',projectRouter)
 
 exports.app = app;
