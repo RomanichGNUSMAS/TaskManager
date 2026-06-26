@@ -2,7 +2,7 @@ exports.AppError = class extends Error {
     constructor (message,statusCode) {
         super(message);
         this.statusCode = statusCode;
-        this.isOpertaional = true;
+        this.isOperational = true;
         switch (statusCode) {
             case 400 : {
                 this.name = 'BadRequestError';

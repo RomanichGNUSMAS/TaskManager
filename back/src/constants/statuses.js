@@ -1,0 +1,1 @@
+exports.statuses = ['todo', 'in_process','review', 'done']

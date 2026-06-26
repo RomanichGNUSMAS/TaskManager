@@ -5,7 +5,7 @@ const userSchema = new mongoose.Schema({
     surname: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     phone: { type: Number, required: true },
-    password: { type: String, required: true, select : false },
+    password: { type: String, required: true },
     role: { type: String, enum: ['TEAMLEAD', 'DEVELOPER', 'GOD'], default: 'DEVELOPER' },
     tasks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Task' }],
     settings: {

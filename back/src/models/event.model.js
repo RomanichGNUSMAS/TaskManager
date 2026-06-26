@@ -7,9 +7,16 @@ const eventSchema = new mongoose.Schema({
         trim: true
     },
     project: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Project',
-        required: true
+        type: String,
+        enum : ["Backend","UX Research",
+            "General","Development",
+            "Mobile App","Website Redesign",
+            "Product Relaunch","Marketing"],
+        required: true,
+        link : {
+            type :String,
+            required:false
+        }
     },
     location: {
         type: String,
@@ -36,5 +43,4 @@ const eventSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-// Красивый экспорт модели
 module.exports = mongoose.model('Event', eventSchema);

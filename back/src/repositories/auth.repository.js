@@ -14,7 +14,7 @@ exports.AuthRepository = class {
     static async signin(rawData) {
         const found = await userModel.findOne({ email:rawData.email });
         if(!found) return 404;
-        const compareResult = comparePassword(rawData.password,found.password)
+        const compareResult = await comparePassword(rawData.password,found.password);
         if(!compareResult) return 400;
         return createKey(found.email);
     }

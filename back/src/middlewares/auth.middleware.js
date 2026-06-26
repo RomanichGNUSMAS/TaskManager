@@ -8,9 +8,9 @@ exports.AuthMiddleware = class {
         if(!headers?.trim() || !headers.startsWith('Bearer ')) next(new AppError("define token!",401));
         const jwt = verifyToken(headers.split(' ')[1]);
         if(!jwt) next(new AppError('invalid token',401));
-        const user = userModel.findOne({ email:jwt.email });
+        const user = await userModel.findOne({ email:jwt.email });
         if(!user) next(new AppError('user with this token not found', 404));
-        if(user.role !== 'GOD' || user.role !== 'TEAMLEAD') next(new AppError('you dont have a permission to do this operation', 403));
+        if(user.role !== 'GOD' && user.role !== 'TEAMLEAD') next(new AppError('you dont have a permission to do this operation', 403));
         next();
     }
 }

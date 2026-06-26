@@ -1,8 +1,10 @@
 const { AppError } = require("../errors/AppError");
+const { default: mongoose, mongo } = require("mongoose");
 const { ProjectRepository } = require("../repositories/project.repository");
+const { userModel } = require("../models/user.model")
 const { projectScheme } = require("../validators/project.validator")
 
-exports.ProjectSerivce = class {
+exports.ProjectService = class {
     static async getAll() {
         return await ProjectRepository.getAll();
     }
@@ -14,9 +16,16 @@ exports.ProjectSerivce = class {
     }
     static async newProject(token, rawData) {
         const validation = projectScheme.safeParse(rawData);
+        const mongoID = new mongoose.Types.ObjectId(rawData.teamLeadId)
+        const user = await userModel.findOne({ _id: mongoID })
+        console.log(mongoID)
+        if (!user || (user.role !== 'GOD' && user.role != 'TEAMLEAD'))
+            throw new AppError('you dont have permission to create project')
         if (!validation) throw new AppError('invalid credentials', 400)
-        const result = await ProjectRepository.newProject(token, rawData);
-        switch (result) {
+        const result = await ProjectRepository.newProject(token, {
+            ...rawData,
+            teamLeadId: mongoID
+        }); switch (result) {
             case 403: {
                 throw new AppError('you don\'t have permission to create new Project', 404)
             }
