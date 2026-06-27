@@ -34,4 +34,20 @@ exports.AuthService = class {
         }
         return result;
     }
+
+    static async me(token) {
+        if(!token?.trim()) throw new AppError('invalid token', 400);
+        const result = await AuthRepository.me(token);
+        switch (result) {
+            case 403 : {
+                throw new AppError('you dont have permission to use this app', 403);
+            }
+            case 404 : {
+                throw new AppError('user not found', 404)
+            }
+            default : {
+                return result;
+            }
+        }
+    }
 }

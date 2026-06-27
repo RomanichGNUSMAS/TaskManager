@@ -1,7 +1,7 @@
 const { default: mongoose } = require("mongoose");
 const { userModel } = require("../models/user.model");
 const { hashPassword, comparePassword } = require("../utils/bcrypt");
-const { createKey } = require("../utils/jwt");
+const { createKey, verifyToken } = require("../utils/jwt");
 
 exports.AuthRepository = class {
     static async signup(rawData){
@@ -17,6 +17,14 @@ exports.AuthRepository = class {
         const compareResult = await comparePassword(rawData.password,found.password);
         if(!compareResult) return 400;
         return createKey(found.email);
+    }
+
+    static async me(token) {
+        const jwt = verifyToken(token)
+        if(!jwt) return 403;
+        const user = await userModel.findOne({ email:jwt.email })
+        if(!user) return 404;
+        return user;
     }
 }
 

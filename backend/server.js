@@ -5,7 +5,7 @@ const { MONGO_URL } = require('./src/config/env');
 (async function () {
     try {
         await mongoose.connect(MONGO_URL);
-        app.listen(3000,() => {
+        app.listen(3001,() => {
             console.log("server is up on 3000")
         })
     }

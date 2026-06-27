@@ -4,7 +4,8 @@ const { asyncHandler } = require('../utils/asyncHandler');
 
 const router = require('express').Router();
 
+router.get('/me', asyncHandler(AuthController.me))
 router.post('/signin', asyncHandler(AuthController.signin))
-router.post('/signup', AuthMiddleware.isAdmin ,asyncHandler(AuthController.signup))
+router.post('/signup',asyncHandler(AuthController.signup))
 
 exports.authRouter = router;
