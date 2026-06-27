@@ -2,6 +2,8 @@ export type User = {
     id: string,
     name: string,
     surname : string,
+    role: 'TEAMLEAD' | 'GOD' | 'DEVELOPER'
+    password:string,
     email : string,
     phone : number,
     projects : Project[],

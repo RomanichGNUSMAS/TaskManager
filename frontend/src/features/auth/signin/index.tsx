@@ -1,11 +1,21 @@
 import React from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
-import type { User } from "../../types/types";
+import type { User } from "../../../types/types";
+import { useSignInMutation } from "../authApi";
+import { useNavigate } from "react-router-dom";
 
 export const Signin: React.FC = () => {
     const { register, formState: { errors }, handleSubmit } = useForm<User>();
-    const handleLog: SubmitHandler<Partial<User>> = (data) => {
-        //zustand using
+    const [signIn] = useSignInMutation();
+    const nav = useNavigate()
+    const handleLog: SubmitHandler<User> = (data) => {
+        void signIn(data)
+            .unwrap()
+            .then((res) => {
+              localStorage.setItem('token',res as string);
+              void nav('/settings/profile')  
+            })
+            .catch(console.log)
     }
     return (
         <div>
