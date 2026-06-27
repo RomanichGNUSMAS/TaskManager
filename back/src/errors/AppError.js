@@ -24,7 +24,6 @@ exports.AppError = class extends Error {
                 this.name = 'ConflictError';
                 break;
             }
-
         }
     } 
 }

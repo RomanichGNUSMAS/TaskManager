@@ -9,7 +9,7 @@ const router = require('express').Router();
 router.get('/',ProjectController.getAll);
 router.get('/:id',asyncHandler(ProjectController.getById));
 router.get('/:id/tasks',TaskController.getAllForOneProject);
-router.post('/',AuthMiddleware.isAdmin, asyncHandler(ProjectController.newProject));
+router.post('/',AuthMiddleware.checkAdminByid ,AuthMiddleware.isAdmin, asyncHandler(ProjectController.newProject));
 router.put('/:id',AuthMiddleware.isAdmin, asyncHandler(ProjectController.updateProject));
 router.put('/:id/favorite',ProjectController.favoriteProject);
 router.delete('/:id',AuthMiddleware.isAdmin, asyncHandler(ProjectController.deleteProject))

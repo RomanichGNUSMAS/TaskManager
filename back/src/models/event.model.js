@@ -12,15 +12,13 @@ const eventSchema = new mongoose.Schema({
             "General","Development",
             "Mobile App","Website Redesign",
             "Product Relaunch","Marketing"],
-        required: true,
-        link : {
-            type :String,
-            required:false
-        }
+        required: true
+    },
+    link : {
+        type :String,
     },
     location: {
         type: String,
-        required: true,
         default: 'Online' 
     },
     date: {

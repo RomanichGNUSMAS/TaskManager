@@ -17,7 +17,8 @@ const userSchema = new mongoose.Schema({
     notifications: [{
         text: { type: String, required: true },
         isRead: { type: Boolean, default: false },
-        createdAt: { type: Date, default: Date.now }
+        createdAt: { type: Date, default: Date.now },
+        eventId : { type:mongoose.Schema.Types.ObjectId, ref: 'Event', required: true }
     }],
     projects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Project' }]
 }, { timestamps: true });

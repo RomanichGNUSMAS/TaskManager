@@ -1,5 +1,6 @@
 const { AppError } = require("../errors/AppError");
-const { EventRepository } = require("../repositories/event.repository")
+const { EventRepository } = require("../repositories/event.repository");
+const { eventScheme } = require("../validators/event.validator");
 
 exports.EventService = class {
     static async getAll() {
@@ -7,12 +8,21 @@ exports.EventService = class {
     }
 
     static async getDayEvents(date) {
-        return await EventRepository.getDayEvents(date);
+        const new_date = new Date(date);
+        try {
+            new_date.toISOString()
+        } catch {
+            throw new AppError('invalid date', 400)
+        }
+        return await EventRepository.getDayEvents(new_date);
     }
 
     static async newEvent(token,rawData) {
-        const result = await EventRepository.newEvent(token, rawData);
-        if(Array.isArray(result)) {
+        const validation = eventScheme.safeParse(rawData);
+        if(!validation) throw new AppError('invalid credentials', 400);
+        if(rawData?.participants && rawData.participants.length <= 0) throw new AppError('cannot create event without participants', 400);
+        const result = await EventRepository.createEvent(token, rawData);
+        if(Array.isArray(result) && result.length > 0) {
             throw new AppError(`users with this id not found\n ${result.join('\n')}`,404)
         }
         switch (result) {
@@ -28,8 +38,11 @@ exports.EventService = class {
         }
     }
 
-    static async updateEvent(rawData) {
-        
-        return await EventRepository.updateEvent(rawData);
+    static async updateEvent(eventId,rawData) {
+        return await EventRepository.updateEvent(eventId,rawData);
+    }
+
+    static async deleteEvent(eventId) {
+        return await EventRepository.deleteEvent(eventId) 
     }
 }
