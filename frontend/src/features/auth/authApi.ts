@@ -25,28 +25,42 @@ export const authApi = createApi({
         }),
 
         GetMe: build.query<User, void>({
-            queryFn: async (_arg, _api, _extraOptions, baseQuery) => {
-                const token = localStorage.getItem('token')
-                if (!token) {
-                    return {
-                        error: {
-                            status: 401,
-                            data : { message : "token is not defined"},
-                        },
-                    };
-                } const result = await baseQuery({
+            query: () => {
+                const token = localStorage.getItem('token');
+                return {
                     url: '/auth/me',
-                    headers: { Authorization: `Bearer ${token}` }
-                })
-
-                if (result.error) {
-                    return { error: result.error };
+                    headers : { Authorization : `Bearer ${token}`},
+                    providesTags: ['theme']
                 }
-
-                return { data: result.data as User };
             }
+        }),
+        SetPhoto: build.mutation<void, { file: FormData, id: string }>({
+            query: ({ file, id }) => ({
+                url: `/users/${id}`,
+                method: `patch`,
+                body: file
+            })
+        }),
+        UpdateAppearance: build.mutation<void, { theme: string, id: string }>({
+            query: ({ theme, id }) => ({
+                url: `/users/${id}`,
+                method: "put",
+                headers: { ContentType: 'application/json' },
+                body: { settings: { appearance: theme } },
+                invalidatesTags: ['theme']
+            })
+        }),
+        DeleteMyself: build.mutation<User, { id: string }>({
+            query: ({ id }) => ({
+                url: `/users/${id}`,
+                method: "delete"
+            })
         })
     })
 })
 
-export const { useGetMeQuery,useSignUpMutation,useSignInMutation } = authApi;
+export const { useGetMeQuery,
+    useSignUpMutation,
+    useSignInMutation,
+    useUpdateAppearanceMutation,
+    useDeleteMyselfMutation } = authApi;

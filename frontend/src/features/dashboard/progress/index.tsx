@@ -1,9 +1,13 @@
 import React from "react";
+import { useThemeStyles } from "../../../hooks/useThemeStyles";
 
 export const Progress:React.FC = () => {
+    const { card, text } = useThemeStyles()
+    
     return (
-        <div>
-            Progress
+        <div className={card}>
+            <h3 className={`text-lg font-semibold ${text.primary}`}>Progress</h3>
+            <p className={`mt-4 ${text.secondary}`}>Progress tracking coming soon...</p>
         </div>
     )
 }
