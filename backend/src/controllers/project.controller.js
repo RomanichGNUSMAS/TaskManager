@@ -2,7 +2,7 @@ const { ProjectService } = require('../services/project.service')
 
 exports.ProjectController = class {
     static async getAll(req,res,next) {
-        const result = await ProjectService.getAll();
+        const result = await ProjectService.getAll(req.query);
         res.json(result)
     }
 

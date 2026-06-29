@@ -1,11 +1,26 @@
 const { verifyToken } = require('../utils/jwt')
-const { default:mongoose } = require('mongoose')
+const { default: mongoose } = require('mongoose')
 const { userModel } = require('../models/user.model')
 const { projectModel } = require('../models/project.model')
+const { taskModel } = require('../models/task.model')
 
 exports.ProjectRepository = class {
-    static getAll() {
-        return projectModel.find()
+    static async getAll(limit, page) {
+        const totalProjects = await projectModel.countDocuments();
+        const totalActive = await projectModel.countDocuments({ state: 'active' });
+        const projects = await projectModel.find()
+            .skip(page * limit)
+            .limit(limit)
+            .sort({ createdAt: -1 });
+
+        const totalPages = Math.ceil(totalProjects / limit);
+
+        return {
+            totalActive,
+            totalProjects,
+            totalPages: totalPages || 1,
+            projects
+        }
     }
 
     static async getById(projectId) {
@@ -32,10 +47,12 @@ exports.ProjectRepository = class {
 
     static async removeProject(token, projectId) {
         const jwt = verifyToken(token);
+        const mongooseId = new mongoose.Types.ObjectId(projectId)
         if (!jwt) return 403;
         const user = userModel.findOne({ email: jwt.email });
         if (!user) return 404;
-        return await projectModel.findOneAndDelete({ _id: new mongoose.Types.ObjectId(projectId) });
+        await taskModel.deleteMany({ projectId: mongooseId })
+        return await projectModel.findOneAndDelete({ _id: mongooseId });
     }
 
     static async favoriteProject(token, projectId) {

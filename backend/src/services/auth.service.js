@@ -24,7 +24,7 @@ exports.AuthService = class {
                 }
 
                 case 400: {
-                    throw new AppError("invalid name or password")
+                    throw new AppError("invalid name or password", 400)
                 }
 
                 default: {

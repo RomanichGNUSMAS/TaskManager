@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema({
     tasks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Task' }],
     settings: {
         appearance: { type: String, enum: ['light', 'dark', 'system'], default: 'dark' },
+        avatar : { type: String, required : false },
         language: { type: String, enum: ['en', 'ru', 'am'], default: 'ru' },
         timezone: { type: String, default: 'Asia/Yerevan' }
     },

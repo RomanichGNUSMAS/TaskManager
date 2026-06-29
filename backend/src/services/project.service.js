@@ -5,8 +5,8 @@ const { userModel } = require("../models/user.model")
 const { projectScheme } = require("../validators/project.validator")
 
 exports.ProjectService = class {
-    static async getAll() {
-        return await ProjectRepository.getAll();
+    static async getAll({ limit, page }) {
+        return await ProjectRepository.getAll(limit, page);
     }
 
     static async getById(projectId) {
