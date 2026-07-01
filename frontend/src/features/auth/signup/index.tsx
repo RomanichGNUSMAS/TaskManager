@@ -2,13 +2,20 @@ import React from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { User } from "../../../types/types";
 import { useThemeStyles } from "../../../hooks/useThemeStyles";
+import { Link, useNavigate } from "react-router-dom";
+import { useSignUpMutation } from "../authApi";
 
 export const Signup: React.FC = () => {
     const { register, formState: { errors }, handleSubmit } = useForm<User>()
+    const [signUp] = useSignUpMutation();
     const { card, text, input, button, isDark } = useThemeStyles()
+    const navigate = useNavigate()
     const handleSend: SubmitHandler<User> = (data) => {
-        
-    }
+        void signUp(data)
+            .unwrap()
+            .then(() => navigate('/'))
+            .catch(console.log)
+        }
 
     return (
         <div className={`min-h-screen flex items-center justify-center px-4 ${isDark ? 'bg-slate-950' : 'bg-slate-50'}`}>
@@ -18,6 +25,12 @@ export const Signup: React.FC = () => {
                     {Object.values(errors).map((error, idx) =>
                         <p key={idx} className="text-red-500 text-sm">{error.message}</p>
                     )}
+                    <Link
+                        to="/"
+                        className={`inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold transition shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 ${isDark ? 'bg-cyan-500 text-slate-950 hover:bg-cyan-400' : 'bg-cyan-600 text-slate-950 hover:bg-cyan-500'}`}
+                    >
+                        Back to Home
+                    </Link>
                     <div>
                         <label className={`text-sm font-medium block mb-1 ${text.secondary}`}>Name</label>
                         <input type="text" {...register("name", { required: "please fill your name" })} className={input} />

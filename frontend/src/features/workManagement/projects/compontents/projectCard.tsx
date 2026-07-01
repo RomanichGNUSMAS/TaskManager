@@ -3,6 +3,7 @@ import { Project, Task } from "../../../../types/types";
 import { useGetTasksByProjectIdQuery, useUpdateProjectMutation } from "../../workManagementApi";
 import { DeletModal } from "./deleteModal";
 import { useThemeStyles } from "../../../../hooks/useThemeStyles";
+import { useGetMeQuery } from "../../../auth/authApi";
 
 export const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
     const { data: taskData, isLoading: isTasksLoading } = useGetTasksByProjectIdQuery({
@@ -13,7 +14,7 @@ export const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
     const [isDeleting, setDeleteState] = useState(false);
     const [isUpdating, setUpdateState] = useState(false);
     const { card, text, button } = useThemeStyles();
-
+    const { data: me } = useGetMeQuery()
     const nameRef = useRef<null | HTMLHeadingElement>(null);
     const stateRef = useRef<null | HTMLSpanElement>(null);
     const progress = project.tasksCount > 0
@@ -21,20 +22,22 @@ export const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
         : 0;
 
 
-    const handleSaveChanges = (project:Project,token:string) => {
+    const handleSaveChanges = (project: Project, token: string) => {
         if (!nameRef.current?.textContent?.trim()
             || !stateRef.current?.innerText?.trim()) return;
-        void updateProject({ project: { 
-            name: nameRef.current.textContent,
-            state: stateRef.current.innerText as 'on_hold' | 'active' | 'completetd'
-         }, id:project._id,token })
-         .unwrap()
-         .catch(err => {
-            console.error(err)
-         })
+        void updateProject({
+            project: {
+                name: nameRef.current.textContent,
+                state: stateRef.current.innerText as 'on_hold' | 'active' | 'completetd'
+            }, id: project._id, token
+        })
+            .unwrap()
+            .catch(err => {
+                console.error(err)
+            })
 
     }
-    return taskData && (
+    return taskData && me  && (
         <div className={`${card} mb-4 transition`}>
             {isDeleting && <DeletModal
                 setDeleteState={setDeleteState}
@@ -56,33 +59,41 @@ export const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
                         </span>
                     </div>
                     <div className="flex items-center gap-0.75 shrink-0">
-                        { !isUpdating && <button
+                        {(!isUpdating && (me.role == 'GOD' || me.role == 'TEAMLEAD')) && <button
                             onClick={() => setUpdateState(true)}
                             className={button.secondary}
                         >
                             Update
-                        </button> }
-                        {
-                            !isUpdating ? <button
-                                onClick={() => setDeleteState(true)}
-                                className={button.danger}
-                            >
-                                Delete
-                            </button> : (
+                        </button>}
+                        {(me.role === 'GOD' || me.role === 'TEAMLEAD') && (
+                            !isUpdating ? (
+                                <button
+                                    onClick={() => setDeleteState(true)}
+                                    className={button.danger}
+                                >
+                                    Delete
+                                </button>
+                            ) : (
                                 <>
                                     <button
                                         className="rounded-lg bg-green-950/50 px-3 py-1.5 text-xs font-medium text-green-400 transition hover:bg-green-950 border border-green-900/30"
                                         onClick={() => {
-                                            handleSaveChanges(project,localStorage.getItem('token')!)
+                                            handleSaveChanges(project, localStorage.getItem('token')!);
                                             setUpdateState(false);
-                                        }}>Save
+                                        }}
+                                    >
+                                        Save
                                     </button>
                                     <button
                                         className="rounded-lg bg-yellow-950/50 px-3 py-1.5 text-xs font-medium text-yellow-400 transition hover:bg-yellow-950 border border-yellow-900/30"
-                                        onClick={() => setUpdateState(false)}>Cancel</button>
+                                        onClick={() => setUpdateState(false)}
+                                    >
+                                        Cancel
+                                    </button>
                                 </>
                             )
-                        }
+                        )}
+
                     </div>
                 </div>
             </div>

@@ -10,29 +10,29 @@ exports.UserRepository = class {
     }
 
     static async updateUser(id, rawData) {
-    if (!id || typeof id === 'object') {
-        throw new Error("Invalid User ID");
+        if (!id || typeof id === 'object') {
+            throw new Error("Invalid User ID");
+        }
+        const dataToUpdate = rawData ? { ...rawData } : {};
+
+        const user = await userModel.findById(id);
+        if (!user) {
+            return null;
+        }
+
+        const protectedFields = ['notifications', 'tasks', 'projects', 'password'];
+        for (const field of protectedFields) {
+            delete dataToUpdate[field];
+        }
+
+        user.set(dataToUpdate);
+
+        return await user.save();
     }
-    const dataToUpdate = rawData ? { ...rawData } : {};
 
-    const user = await userModel.findById(id);
-    if (!user) {
-        return null;
+    static async getUsersByRole(role) {
+        return await userModel.find({ role });
     }
-
-    const protectedFields = ['notifications', 'tasks', 'projects', 'password'];
-    for (const field of protectedFields) {
-        delete dataToUpdate[field];
-    }
-
-
-
-    user.set(dataToUpdate);
-
-    return await user.save();
-}
-
-
 
     static async setPhoto(rawData) {
         upload(rawData);

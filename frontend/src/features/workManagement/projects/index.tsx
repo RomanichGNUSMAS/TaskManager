@@ -4,10 +4,12 @@ import { Project } from "../../../types/types";
 import { ProjectCard } from "./compontents/projectCard";
 import { CreateProjectForm } from "./compontents/createProject";
 import { useThemeStyles } from "../../../hooks/useThemeStyles";
+import { useGetMeQuery } from "../../auth/authApi";
 
 export const Projects: React.FC = () => {
     const [page, setPage] = useState(0);
-    const [isClicked, setClick] = useState(false)
+    const [isClicked, setClick] = useState(false);
+    const { data : me } = useGetMeQuery()
     const limit = 3;
     const { card, text, button } = useThemeStyles();
 
@@ -21,14 +23,14 @@ export const Projects: React.FC = () => {
         );
     }
 
-    return data && (
+    return data && me && (
         <div className="mx-auto flex max-w-4xl flex-col gap-6">
-            <button 
+             { (me.role == 'GOD' || me.role == 'TEAMLEAD') && <button 
                 onClick={() => setClick(true)}
                 className={button.primary}
             >
                 Create Project
-            </button>
+            </button> }
             {isClicked ? <CreateProjectForm onClose={() => setClick(false)} /> : ( <>
             <div className={card}>
                 <div className="mb-6 flex flex-wrap items-center justify-between gap-4">

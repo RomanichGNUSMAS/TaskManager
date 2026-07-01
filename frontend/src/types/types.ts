@@ -2,6 +2,7 @@ export type User = {
     statusCode?:number,
     _id: string,
     name: string,
+    avatar:string,
     surname : string,
     role: 'TEAMLEAD' | 'GOD' | 'DEVELOPER'
     password:string,
@@ -10,8 +11,8 @@ export type User = {
     projects : Project[],
     tasks:Task[],
     settings : Settings,
-    createdAt:Date,
-    updatedAt:Date
+    createdAt:string,
+    updatedAt:string
 }
 
 export type Project = {
@@ -22,8 +23,8 @@ export type Project = {
     completedCount : number,
     favoritedBy:string[],
     teamLeadId: string,
-    createdAt:Date,
-    updatedAt:Date
+    createdAt:string,
+    updatedAt:string
 }
 
 export type Settings = {
@@ -32,14 +33,14 @@ export type Settings = {
 }
 
 export type Task = {
-    _id:string
+    _id?:string,
     title : string,
     priority : 'low' | 'medium' | 'high' | 'urgent',
     projectId: string,
-    userId : string,
+    userIds : string[],
     status : 'todo' | 'in_process' | 'review' | 'done',
-    subtasks : {title:string,done:boolean}[],
-    createdAt:Date,
-    updatedAt:Date
+    subtasks? : {title:string,done:boolean}[],
+    createdAt?:string,
+    updatedAt?:string
 }
 

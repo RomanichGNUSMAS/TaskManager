@@ -20,4 +20,8 @@ exports.UserService = class {
     static setPhoto(rawData) {
         return UserRepository.setPhoto(rawData);
     }
+
+    static async getUsersByRole(role) { 
+        return UserRepository.getUsersByRole(role)
+    }
 }

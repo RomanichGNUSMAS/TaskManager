@@ -30,9 +30,9 @@ export const authApi = createApi({
                 return {
                     url: '/auth/me',
                     headers : { Authorization : `Bearer ${token}`},
-                    providesTags: ['theme']
                 }
-            }
+            },
+            providesTags: ['theme' as const] as any
         }),
         SetPhoto: build.mutation<void, { file: FormData, id: string }>({
             query: ({ file, id }) => ({
@@ -47,19 +47,31 @@ export const authApi = createApi({
                 method: "put",
                 headers: { ContentType: 'application/json' },
                 body: { settings: { appearance: theme } },
-                invalidatesTags: ['theme']
-            })
+            }),
+            invalidatesTags: ['theme' as const] as any
         }),
         DeleteMyself: build.mutation<User, { id: string }>({
             query: ({ id }) => ({
                 url: `/users/${id}`,
                 method: "delete"
             })
+        }),
+        GetUsersByRole: build.query<User[], { role:string }>({
+            query : ({ role }) => ({
+                url: `/users/role/${role}`
+            })
+        }),
+        GetUserById: build.query<User, { id : string }>({
+            query : ({ id }) => ({
+                url: `/users/${id}`
+            })
         })
     })
 })
 
 export const { useGetMeQuery,
+    useGetUsersByRoleQuery,
+    useGetUserByIdQuery,
     useSignUpMutation,
     useSignInMutation,
     useUpdateAppearanceMutation,

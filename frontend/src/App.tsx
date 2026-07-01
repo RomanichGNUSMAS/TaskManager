@@ -124,6 +124,15 @@ export const App = () => {
             Settings
           </NavLink>
 
+          <button
+            onClick={() => {
+              localStorage.removeItem('token');
+              nav('/auth/signin')
+            }}
+            className={`w-full rounded-2xl px-3 py-2.5 text-sm font-semibold transition ${isDark ? 'bg-slate-800 text-slate-100 hover:bg-slate-700' : 'bg-slate-100 text-slate-900 hover:bg-slate-200'}`}
+          >
+            Log Out
+          </button>
           <div className={`pt-2 mt-2 ${isDark ? 'border-slate-800/60' : 'border-slate-200/60'}`} style={{ borderTopWidth: '1px', borderTopStyle: 'solid', borderTopColor: isDark ? 'rgba(71, 85, 105, 0.6)' : 'rgba(203, 213, 225, 0.6)' }}>
             <p className={`mb-2 px-3 text-[10px] uppercase tracking-[0.28em] ${isDark ? 'text-slate-600' : 'text-slate-500'}`}>Admin</p>
             <NavLink className={navItem('/auth/signup', isDark)} to="/auth/signup">
