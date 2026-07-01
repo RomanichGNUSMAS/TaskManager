@@ -21,15 +21,14 @@ export const ProjectTasks: React.FC<ProjectTasksProps> = ({ projectId, projectNa
     const { text } = useThemeStyles();
     
     const { data: tasks, isLoading } = useGetTasksByProjectIdQuery({ projectId })
-
-    return (
+    return tasks && (
         <div className="border-b border-slate-700/50 pb-4 last:border-none">
             <h2 className={`text-lg font-semibold mb-4 ${text.primary}`}>{projectName}</h2>
 
             {isLoading && <p className={`text-xs ${text.tertiary}`}>Loading tasks…</p>}
 
             <div className="space-y-3">
-                {tasks && tasks.length > 0 ? (
+                {
                     tasks.map((task: Task) => (
                         <div key={task._id} className="rounded-3xl border border-slate-800/80 bg-slate-950/90 p-4 shadow-[0_10px_30px_-24px_rgba(15,23,42,0.9)]">
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -89,9 +88,7 @@ export const ProjectTasks: React.FC<ProjectTasksProps> = ({ projectId, projectNa
                             </div>
                         </div>
                     ))
-                ) : (
-                    !isLoading && <p className={`text-sm italic ${text.tertiary}`}>No tasks available</p>
-                )}
+                }
             </div>
         </div>
     );

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useGetMeQuery } from "../features/auth/authApi";
 
-type Theme = "dark" | "white" | "system";
+type Theme = "dark" | "light" | "system";
 
 interface ThemeContextType {
   theme: Theme;
@@ -23,7 +23,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const applyTheme = (selectedTheme: Theme) => {
     const root = document.documentElement;
-    
+
     if (selectedTheme === "dark") {
       root.setAttribute("data-theme", "dark");
       root.style.setProperty("--bg-primary", "rgb(15, 23, 42)");
@@ -32,8 +32,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       root.style.setProperty("--text-secondary", "rgb(148, 163, 184)");
       root.style.setProperty("--border-color", "rgba(71, 85, 105, 0.7)");
       root.style.setProperty("--accent-color", "rgb(6, 182, 212)");
-    } else if (selectedTheme === "white") {
-      root.setAttribute("data-theme", "white");
+    } else if (selectedTheme === "light") {
+      root.setAttribute("data-theme", "light");
       root.style.setProperty("--bg-primary", "rgb(255, 255, 255)");
       root.style.setProperty("--bg-secondary", "rgba(241, 245, 249, 0.9)");
       root.style.setProperty("--text-primary", "rgb(15, 23, 42)");
@@ -42,7 +42,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       root.style.setProperty("--accent-color", "rgb(6, 182, 212)");
     } else if (selectedTheme === "system") {
       const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      applyTheme(prefersDark ? "dark" : "white");
+      applyTheme(prefersDark ? "dark" : "light");
     }
   };
 

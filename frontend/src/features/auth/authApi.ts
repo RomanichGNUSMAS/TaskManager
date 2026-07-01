@@ -41,6 +41,13 @@ export const authApi = createApi({
                 body: file
             })
         }),
+        UpdateUser:build.mutation<void ,{ user : Partial<User>, id:string } >({
+            query : ({ user,id }) => ({
+                url:`/users/${id}`,
+                method:'put',
+                body:user
+            })
+        }),
         UpdateAppearance: build.mutation<void, { theme: string, id: string }>({
             query: ({ theme, id }) => ({
                 url: `/users/${id}`,
@@ -71,6 +78,7 @@ export const authApi = createApi({
 
 export const { useGetMeQuery,
     useGetUsersByRoleQuery,
+    useUpdateUserMutation,
     useGetUserByIdQuery,
     useSignUpMutation,
     useSignInMutation,

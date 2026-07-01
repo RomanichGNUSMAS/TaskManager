@@ -12,9 +12,6 @@ export const useThemeStyles = () => {
     isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   }
 
-
-
-
   return {
     isDark,
     // Background colors
