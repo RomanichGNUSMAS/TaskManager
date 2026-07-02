@@ -17,13 +17,25 @@ exports.UserController = class {
 
     static async setPhoto(req,res,next) {
         const { file } = req;
-        const result = await UserService.setPhoto(file);
-        res.sendStatus(204)
+        const id = req.params.id;
+        const result = await UserService.setPhoto(file.filename,id);
+        return res.sendStatus(204)
     }
 
     static async getUsersByRole(req,res,next) {
         const { role } = req.params;
         const result = await UserService.getUsersByRole(role);
-        res.json(result)
+        return res.json(result)
+    }
+
+    static async changePassword(req,res,next) {
+        const {params : { id }, body : passwords } = req;
+        const result = await UserService.changePassword(passwords,id)
+        return res.sendStatus(204)
+    }
+
+    static async sendNotification(req,res,next) {
+        const { params : { id }} = req;
+        const result = await UserService.sendNotificaion(id,req.body.message)
     }
 }

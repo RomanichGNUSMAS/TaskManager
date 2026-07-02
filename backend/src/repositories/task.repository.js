@@ -3,6 +3,7 @@ const { taskModel } = require('../models/task.model');
 const { ProjectRepository } = require('./project.repository');
 const { verifyToken } = require('../utils/jwt');
 const { default: mongoose } = require('mongoose');
+const { projectModel } = require('../models/project.model');
 
 exports.TaskRepository = class {
   static async getAllTasksOfProject(projectId) {
@@ -18,6 +19,9 @@ exports.TaskRepository = class {
     const ObjectId = mongoose.Types.ObjectId;
     if (!jwt) return 403;
     const task = new taskModel({...rawData,userId:new ObjectId(rawData.userId), projectId:new ObjectId(rawData.projectId)});
+    await projectModel.findByIdAndUpdate(rawData.projectId, {
+      $inc : { tasksCount : 1 }
+    })
     return await task.save();
   }
 
@@ -49,6 +53,12 @@ exports.TaskRepository = class {
   static async deleteTask(token, taskId) {
     const jwt = verifyToken(token);
     if (!jwt) return 403;
-    return await taskModel.deleteOne({ _id:new mongoose.Types.ObjectId(taskId) })
+    const result = await taskModel.deleteOne({ _id:new mongoose.Types.ObjectId(taskId) })
+    if(taskModel.state === 'completed') {
+      await projectModel.findOneAndUpdate(result.projectId, {
+        $dec : { completedCount : 1,tasksCount : 1 }
+      })
+    } else await projectModel.findOneAndUpdate(result.projectId, { $dec : { tasksCount : 1 }})
+    return result;
   }
 };

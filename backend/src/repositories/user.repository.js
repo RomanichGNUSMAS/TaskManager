@@ -2,7 +2,8 @@ const { default: mongoose } = require("mongoose");
 const { userModel } = require("../models/user.model");
 const { verifyToken } = require("../utils/jwt");
 const { upload } = require("../utils/multer");
-const { merge } = require('lodash')
+const { merge } = require('lodash');
+const { comparePassword, hashPassword } = require("../utils/bcrypt");
 
 exports.UserRepository = class {
     static async getUserById(id) {
@@ -34,11 +35,30 @@ exports.UserRepository = class {
         return await userModel.find({ role });
     }
 
-    static async setPhoto(rawData) {
-        upload(rawData);
+    static async setPhoto(rawData,id) {
+        return await userModel.findByIdAndUpdate(id, {
+            $set : { avatar : rawData }
+        })
     }
 
     static async deleteMyself(id) {
         return await userModel.findByIdAndDelete(id);
+    }
+
+    static async changePassword(rawData, userId) {
+        const user = await userModel.findById(userId)
+        if(!user) return 404;
+        const passChangePermission = await comparePassword(rawData.current,user.password)
+        if(!passChangePermission) return 403;
+        const newHashedPassword = await hashPassword(rawData.new);
+        await userModel.findByIdAndUpdate(userId, {
+            $set : { password : newHashedPassword }
+        })
+    }
+
+    static async sendNotification(userId,message) {
+        return await userModel.findByIdAndUpdate(userId,{
+            $push : { notifications : message }
+        })
     }
 }
