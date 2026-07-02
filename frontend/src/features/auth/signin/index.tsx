@@ -15,14 +15,16 @@ export const Signin: React.FC = () => {
             .unwrap()
             .then((res) => {
               localStorage.setItem('token',res as string);
-              void nav('/settings/profile')  
+              nav('/settings/profile')  
             })
             .catch(console.log)
     }
     return (
         <div className={`min-h-screen flex items-center justify-center px-4 ${isDark ? 'bg-slate-950' : 'bg-slate-50'}`}>
             <div className={`w-full max-w-md ${card}`}>
-                <h2 className={`text-2xl font-bold mb-6 ${text.primary}`}>Sign In</h2>
+                <h2 className={`text-2xl font-bold mb
+                    
+                    6 ${text.primary}`}>Sign In</h2>
                 <form onSubmit={handleSubmit(handleLog)} className="space-y-4">
                     {Object.values(errors).map((error, idx) =>
                         <p key={idx} className="text-red-500 text-sm">{error.message}</p>

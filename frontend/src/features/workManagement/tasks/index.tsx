@@ -6,13 +6,14 @@ import { CreateTask } from "./components/createTask";
 import { useGetMeQuery } from "../../auth/authApi";
 
 export const Tasks: React.FC = () => {
-    const { card, isDark, text, border, bg } = useThemeStyles();
+    const { card, isDark } = useThemeStyles();
     const { data: me } = useGetMeQuery()
     const { data, isLoading } = useGetProjectsQuery();
     const [isCreating, setCreateState] = useState(false);
 
     if (isLoading || !me) return <div className={card}>Loading...</div>;
     const compare = data!.projects.reduce((t, a) => t + a.tasksCount, 0) == 0;
+    console.log(data)
 
     const mainCardClass = isDark
         ? 'rounded-[32px] border border-slate-800/70 bg-slate-950/90 p-8 shadow-2xl shadow-slate-950/10'
@@ -72,6 +73,7 @@ export const Tasks: React.FC = () => {
                     {data.projects.map((project: any) => (
                         <ProjectTasks
                             key={project._id}
+                            user={data}
                             projectId={project._id}
                             projectName={project.title}
                         />

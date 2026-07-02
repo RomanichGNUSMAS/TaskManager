@@ -1,12 +1,13 @@
-import { useGetMeQuery, useUpdateUserMutation } from "../../../authApi"
+import { useGetMeQuery, useSetPhotoMutation, useUpdateUserMutation } from "../../../authApi"
 import { useThemeStyles } from "../../../../../hooks/useThemeStyles"
 import { Image } from "./components/Image"
-import { useRef, useState } from "react"
+import { RefObject, useRef, useState } from "react"
 
 export const MyProfile = () => {
     const { data } = useGetMeQuery()
     const { card, text, isDark } = useThemeStyles()
-    const [error,setError] = useState('');
+    const [error, setError] = useState('');
+    const [setPhoto] = useSetPhotoMutation()
     const [setChangeOnUser] = useUpdateUserMutation();
 
     const statusBadgeClass = isDark
@@ -33,8 +34,10 @@ export const MyProfile = () => {
     const infoTitleClass = isDark ? 'text-slate-100' : 'text-blue-900';
 
     const [isSomethingChanges, setChange] = useState(false)
+    const [isImageChanged, setImageChange] = useState(false);
 
-    const [name,email,num] = Array.from({ length : 3},() => useRef<null | HTMLSpanElement>(null))
+    const [name, email, num] = Array.from({ length: 3 }, () => useRef<null | HTMLSpanElement>(null))
+    const file = useRef<null | HTMLInputElement>(null)
     const formatDate = (value?: string | Date) => {
         if (!value) return 'Unknown'
         const date = typeof value === 'string' ? new Date(value) : value
@@ -42,16 +45,33 @@ export const MyProfile = () => {
     }
 
     const handleSaveChange = () => {
-        const [nameContent,emailContent,numContent] = [name.current!.textContent, email.current!.textContent, num.current!.textContent]
+        const [nameContent, emailContent, numContent] = [name.current!.textContent, email.current!.textContent, num.current!.textContent]
         let str = '';
-        if(!nameContent?.trim() || nameContent.split(' ').length == 1 || nameContent.split(' ').length > 2) str += 'invalid name?'
-        if(!emailContent?.trim()) str += 'invalid email?'
-        if(!numContent?.trim() || isNaN(+numContent)) str += 'invalid number?'
-        if(str) return setError(str);
+        function isChangedImg() {
+            if (isImageChanged) {
+                const formData = new FormData();
+                formData.append('avatar', file!.current!.files![0])
+                void setPhoto({ file: formData, id: data!._id })
+                    .unwrap()
+                    .catch(err => setError(err.message))
+            }
+        }
+        if (isImageChanged) {
+            isChangedImg();
+            return;
+        }
+        if (!nameContent?.trim() || nameContent.split(' ').length == 1 || nameContent.split(' ').length > 2) str += 'invalid name?'
+        if (!emailContent?.trim()) str += 'invalid email?'
+        if (!numContent?.trim() || isNaN(+numContent)) str += 'invalid number?'
+        if (str) return setError(str);
         setError('')
         setChange(false);
-        void setChangeOnUser({ user: { name:nameContent.split(' ')[0],surname:nameContent.split(' ')[1],email:emailContent, phone:+numContent }, id : data!._id})
+        void setChangeOnUser({ user: { name: nameContent.split(' ')[0], surname: nameContent.split(' ')[1], email: emailContent, phone: +numContent }, id: data!._id })
             .unwrap()
+            .then(() => {
+                isChangedImg()
+                localStorage.removeItem('token');
+            })
             .catch(err => setError(err.message))
 
     }
@@ -70,16 +90,16 @@ export const MyProfile = () => {
 
             <div className="grid gap-6 lg:grid-cols-[220px_1fr]">
                 <div className={profileCardClass}>
-                    <Image setChange={setChange} user={data} />
+                    <Image ref={file as RefObject<HTMLInputElement>} setChange={setImageChange} user={data} />
                     <div className="mt-5 space-y-2 text-center">
                         <p className={`text-lg font-semibold ${text.primary}`}>{data.name} {data.surname}</p>
                         <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-blue-600'}`}>Team member since {formatDate(data.createdAt)}</p>
                     </div>
-                    {isSomethingChanges && <button onClick={handleSaveChange}>save changes</button>}
+                    {(isSomethingChanges || isImageChanged) && <button onClick={handleSaveChange}>save changes</button>}
                     {
-                        error.split('?').map(err => 
-                            <p>{err}</p>
-                        )
+                        error?.split('?').map(err =>
+                            <p key={err}>{err}</p>
+                        ) || error
                     }
                 </div>
 

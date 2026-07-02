@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom"
 import { useGetMeQuery } from "./features/auth/authApi"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useGetProjectsQuery } from "./features/dashboard/dashboardApi"
 
 const navItem = (to: string, isDark: boolean) => ({ isActive }: { isActive: boolean }) => {
@@ -15,6 +15,7 @@ export const App = () => {
   const nav = useNavigate()
   const { isFetching, data, isError, error } = useGetMeQuery();
   const projects = useGetProjectsQuery().data;
+  const [notificationsOpen, setNotificationsOpen] = useState(true);
   
   // Determine isDark based on appearance setting
   let isDark = false;
@@ -53,6 +54,27 @@ export const App = () => {
 
   return data && projects && (
     <div className={`flex min-h-screen ${isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
+      <div className="fixed right-4 top-4 z-[999]">
+        <div className={`overflow-hidden rounded-[28px] border shadow-2xl transition-all duration-300 ${notificationsOpen ? 'w-[320px]' : 'w-16'} ${isDark ? 'border-slate-700 bg-slate-900 text-white shadow-slate-950/30' : 'border-slate-200 bg-white text-slate-900 shadow-slate-200/40'}`}>
+          <div className="flex items-center justify-between gap-3 p-3 pointer-events-auto">
+            <div className="flex items-center gap-3">
+              <div className={`flex h-10 w-10 items-center justify-center rounded-2xl ${isDark ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                <svg onClick={() => setNotificationsOpen(open => !open)} viewBox="0 0 24 24" className={`h-5 w-5 ${isDark ? 'text-cyan-400' : 'text-cyan-500'}`} fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0a3 3 0 11-6 0h6z" />
+                </svg>
+              </div>
+              {notificationsOpen ? (
+                <div className="min-w-0">
+                  <p className={`text-[10px] uppercase tracking-[0.3em] ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Notification</p>
+                  <p className={`mt-2 text-sm ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
+                    New alerts will appear here when backend notifications are available.
+                  </p>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* ── LEFT SIDEBAR ── 20% ──────────────────────────────── */}
       <aside className={`sticky top-0 flex h-screen w-[20%] min-w-[220px] flex-col backdrop-blur-sm ${isDark ? 'border-slate-800/70 bg-slate-950/90' : 'border-slate-200/70 bg-white/90'}`} style={{ borderRightWidth: '1px', borderRightStyle: 'solid', borderRightColor: isDark ? 'rgba(71, 85, 105, 0.7)' : 'rgba(203, 213, 225, 0.7)' }}>

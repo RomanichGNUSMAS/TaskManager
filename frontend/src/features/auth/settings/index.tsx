@@ -31,7 +31,7 @@ export const Settings:React.FC = () => {
             </nav>
 
             <div>
-                <Outlet context={{user:data as User}}/>
+                <Outlet context={{user:data as User,id:data._id as string}}/>
             </div>
         </div>
     )

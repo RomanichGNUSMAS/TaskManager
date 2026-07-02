@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { User } from "../../types/types";
+import { PasswordChange } from "./settings/components/security";
 
 
 export const authApi = createApi({
@@ -12,14 +13,15 @@ export const authApi = createApi({
             query: (user) => ({
                 url: '/auth/signin',
                 body: user,
-                method: 'post'
-            })
+                method: 'POST'
+            }),
+            invalidatesTags : ['log'] as any
         }),
 
         SignUp: build.mutation<User, User>({
             query: (user) => ({
                 url: '/auth/signup',
-                method: 'post',
+                method: 'POST',
                 body: user
             })
         }),
@@ -32,35 +34,36 @@ export const authApi = createApi({
                     headers : { Authorization : `Bearer ${token}`},
                 }
             },
-            providesTags: ['theme' as const] as any
+            providesTags: ['theme','image','log','updateUser'] as any
         }),
         SetPhoto: build.mutation<void, { file: FormData, id: string }>({
             query: ({ file, id }) => ({
-                url: `/users/${id}`,
-                method: `patch`,
+                url: `/users/${id}/avatar`,
+                method: `PATCH`,
                 body: file
-            })
+            }),
+            invalidatesTags:['image'] as any
         }),
         UpdateUser:build.mutation<void ,{ user : Partial<User>, id:string } >({
             query : ({ user,id }) => ({
                 url:`/users/${id}`,
-                method:'put',
+                method:'PUT',
                 body:user
-            })
+            }),
+            invalidatesTags: ['updateUser'] as any
         }),
         UpdateAppearance: build.mutation<void, { theme: string, id: string }>({
             query: ({ theme, id }) => ({
                 url: `/users/${id}`,
-                method: "put",
-                headers: { ContentType: 'application/json' },
+                method: "PUT",
                 body: { settings: { appearance: theme } },
             }),
-            invalidatesTags: ['theme' as const] as any
+            invalidatesTags: ['theme'] as any
         }),
         DeleteMyself: build.mutation<User, { id: string }>({
             query: ({ id }) => ({
                 url: `/users/${id}`,
-                method: "delete"
+                method: "DELETE"
             })
         }),
         GetUsersByRole: build.query<User[], { role:string }>({
@@ -72,6 +75,20 @@ export const authApi = createApi({
             query : ({ id }) => ({
                 url: `/users/${id}`
             })
+        }),
+        ChangePassword: build.mutation<void, PasswordChange & { id : string }>({
+            query : (passwords) => ({
+                url:`/users/${passwords.id}/password`,
+                methods:'PATCH',
+                body : passwords
+            })
+        }),
+        SendNotificaion: build.mutation<void, { id : string, message: string}>({
+            query:({id,message}) => ({
+                url:`/users/${id}/message`,
+                method:"POST",
+                body: { message }
+            })
         })
     })
 })
@@ -80,6 +97,8 @@ export const { useGetMeQuery,
     useGetUsersByRoleQuery,
     useUpdateUserMutation,
     useGetUserByIdQuery,
+    useSetPhotoMutation,
+    useChangePasswordMutation,
     useSignUpMutation,
     useSignInMutation,
     useUpdateAppearanceMutation,

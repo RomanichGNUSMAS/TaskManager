@@ -31,7 +31,6 @@ export const CreateTaskPage: React.FC<Props> = ({ setForm, form, developers, pro
 
     return (
         <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
-        
             <div className="space-y-6">
                 <div className={`space-y-4 ${panelClass}`}>
                     <div>
@@ -53,18 +52,28 @@ export const CreateTaskPage: React.FC<Props> = ({ setForm, form, developers, pro
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div className="space-y-2">
                                 <label className={`block text-sm font-medium ${text.secondary}`}>Project</label>
-                                <select
-                                    value={form.projectId}
-                                    onChange={e => setForm({ ...form, projectId: e.target.value })}
-                                    className={`${input} w-full ${isDark ? 'bg-transparent' : 'bg-white'}`}
-                                >
-                                    <option value="" disabled>Select project</option>
-                                    {projects.map(project => (
-                                        <option key={project._id} value={project._id}>{project.name}</option>
-                                    ))}
-                                </select>
+                                <div className="relative">
+                                    <select
+                                        value={form.projectId}
+                                        onChange={e => setForm({ ...form, projectId: e.target.value })}
+                                        className={`${input} w-full appearance-none pr-10 ${isDark ? 'bg-slate-900 text-white' : 'bg-white text-slate-900'}`}
+                                    >
+                                        <option value="" disabled hidden>Select project</option>
+                                        {projects.map(project => (
+                                            <option
+                                                key={project._id}
+                                                value={project._id}
+                                                className={isDark ? 'bg-slate-900 text-white' : 'bg-white text-slate-900'}
+                                            >
+                                                {project.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <span className={`pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                                        ▾
+                                    </span>
+                                </div>
                             </div>
-
                             <div className="space-y-2">
                                 <label className={`block text-sm font-medium ${text.secondary}`}>Priority</label>
                                 <div className="flex flex-wrap gap-2">
