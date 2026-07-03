@@ -14,7 +14,9 @@ exports.EventService = class {
         } catch {
             throw new AppError('invalid date', 400)
         }
-        return await EventRepository.getDayEvents(new_date);
+        const result = await EventRepository.getDayEvents(new_date);
+        if(result == 400) throw new AppError("invalid credentials", 400);
+        return result;
     }
 
     static async newEvent(token,rawData) {

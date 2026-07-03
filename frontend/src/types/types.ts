@@ -9,10 +9,31 @@ export type User = {
     email : string,
     phone : number,
     projects : Project[],
+    notifications : Notification[]
     tasks:Task[],
     settings : Settings,
     createdAt:string,
     updatedAt:string
+}
+
+export type Notification = {
+    _id:string,
+    text : string,
+    isRead: boolean,
+    createdAt:string,
+    eventId?:string
+}
+
+export type Event = {
+    _id:string,
+    title : string,
+    project : { name : string, projectId : string },
+    link? : string,
+    location : string,
+    date : string,
+    eventType : 'meeting' | 'reminder' | 'deadline',
+    participants: string[],
+    teamLeadId:string
 }
 
 export type Project = {

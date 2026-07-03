@@ -7,19 +7,22 @@ const eventSchema = new mongoose.Schema({
         trim: true
     },
     project: {
-        type: String,
-        enum : ["Backend","UX Research",
-            "General","Development",
-            "Mobile App","Website Redesign",
-            "Product Relaunch","Marketing"],
-        required: true
+        name: {
+            type: String,
+            required: true
+        },
+        projectId : {
+            type:mongoose.Schema.Types.ObjectId,
+            ref: 'Project',
+            required : true
+        }
     },
-    link : {
-        type :String,
+    link: {
+        type: String,
     },
     location: {
         type: String,
-        default: 'Online' 
+        default: 'Online'
     },
     date: {
         type: Date,
@@ -27,7 +30,7 @@ const eventSchema = new mongoose.Schema({
     },
     eventType: {
         type: String,
-        enum: ['meeting', 'deadline', 'task', 'reminder'],
+        enum: ['meeting', 'deadline', 'reminder'],
         default: 'meeting'
     },
     participants: [{

@@ -37,5 +37,18 @@ exports.UserController = class {
     static async sendNotification(req,res,next) {
         const { params : { id }} = req;
         const result = await UserService.sendNotificaion(id,req.body.message)
+        return res.sendStatus(200);
+    }
+
+    static async markAsReadNotification(req,res,next) {
+        const { params : { userId,notificationId }} = req;
+        const result = await UserService.markAsRead(userId,notificationId);
+        return res.sendStatus(200);
+    }
+
+    static async deleteNotification (req,res,next) {
+        const { params : { userId,notificationId }} = req;
+        const result = await UserService.deleteNotificaion(userId,notificationId);
+        return res.json(result);
     }
 }

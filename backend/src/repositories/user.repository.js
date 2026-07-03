@@ -35,9 +35,9 @@ exports.UserRepository = class {
         return await userModel.find({ role });
     }
 
-    static async setPhoto(rawData,id) {
+    static async setPhoto(rawData, id) {
         return await userModel.findByIdAndUpdate(id, {
-            $set : { avatar : rawData }
+            $set: { avatar: rawData }
         })
     }
 
@@ -47,18 +47,41 @@ exports.UserRepository = class {
 
     static async changePassword(rawData, userId) {
         const user = await userModel.findById(userId)
-        if(!user) return 404;
-        const passChangePermission = await comparePassword(rawData.current,user.password)
-        if(!passChangePermission) return 403;
+        if (!user) return 404;
+        const passChangePermission = await comparePassword(rawData.current, user.password)
+        if (!passChangePermission) return 403;
         const newHashedPassword = await hashPassword(rawData.new);
         await userModel.findByIdAndUpdate(userId, {
-            $set : { password : newHashedPassword }
+            $set: { password: newHashedPassword }
         })
     }
 
-    static async sendNotification(userId,message) {
-        return await userModel.findByIdAndUpdate(userId,{
-            $push : { notifications : message }
+    static async sendNotification(userId, message) {
+        return await userModel.findByIdAndUpdate(userId, {
+            $push: { notifications: message }
+        })
+    }
+
+    static async markNotificaionAsRead(userId, notificationId) {
+        const ObjectId = mongoose.Types.ObjectId
+        return await userModel.updateOne({
+            _id: new ObjectId(userId),
+            'notifications._id': new ObjectId(notificationId)
+        }, {
+            $set: { 'notifications.$.isRead': true }
+        }, { new: true })
+    }
+
+    static async deleteNotification(userId, notificationId) {
+        const ObjectId = mongoose.Types.ObjectId
+        return await userModel.updateOne({
+            _id : new ObjectId(userId)
+        }, {
+            $pull : {
+                notifications : {
+                    _id : new ObjectId(notificationId)
+                }
+            }
         })
     }
 }

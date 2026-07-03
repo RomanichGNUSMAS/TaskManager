@@ -73,7 +73,7 @@ export const Tasks: React.FC = () => {
                     {data.projects.map((project: any) => (
                         <ProjectTasks
                             key={project._id}
-                            user={data}
+                            user={me}
                             projectId={project._id}
                             projectName={project.title}
                         />

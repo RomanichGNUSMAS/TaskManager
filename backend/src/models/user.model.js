@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema({
         text: { type: String, required: true },
         isRead: { type: Boolean, default: false },
         createdAt: { type: Date, default: Date.now },
-        eventId : { type:mongoose.Schema.Types.ObjectId, ref: 'Event', required: true }
+        eventId : { type:mongoose.Schema.Types.ObjectId, ref: 'Event' }
     }],
     projects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Project' }]
 }, { timestamps: true });

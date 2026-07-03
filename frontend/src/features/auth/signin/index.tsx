@@ -13,9 +13,11 @@ export const Signin: React.FC = () => {
     const handleLog: SubmitHandler<User> = (data) => {
         void signIn(data)
             .unwrap()
-            .then((res) => {
-              localStorage.setItem('token',res as string);
-              nav('/settings/profile')  
+            .then(async (res) => {
+                await localStorage.setItem('token', res as string);
+                setTimeout(() => {
+                    nav('/settings/profile', { replace : true })
+                }, 15)
             })
             .catch(console.log)
     }

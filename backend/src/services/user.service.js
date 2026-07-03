@@ -41,4 +41,14 @@ exports.UserService = class {
     static async sendNotificaion(userId,message) {
         return await UserRepository.sendNotification(userId,message)
     }
+
+    static async markAsRead(userId,notificationId) {
+        const result = await UserRepository.markNotificaionAsRead(userId,notificationId);
+        if(!result) throw new AppError('notification not found', 404);
+        return result
+    }
+
+    static async deleteNotificaion (userId,notificationId) {
+        return await UserRepository.deleteNotification(userId,notificationId);
+    }
 }
