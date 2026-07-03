@@ -18,7 +18,7 @@ export const dashboardApi = createApi({
             }),
             providesTags: ['event'] as any
         }),
-        GetEventByDay: build.query<Event[], { date: Date }>({
+        GetEventByDay: build.query<Event[], { date: string }>({
             query: ({ date }) => ({
                 url: `/events/bydate`,
                 method: "POST",

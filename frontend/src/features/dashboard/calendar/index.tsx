@@ -3,6 +3,8 @@ import { useThemeStyles } from "../../../hooks/useThemeStyles";
 import { ChevronLeft, ChevronRight, CalendarDays, Plus } from "lucide-react";
 import { SelectedDayEvents } from "./components/selectedDayEvent";
 import { CreateModal } from "./components/createModal";
+import { UpcomingEvents } from "./components/upcomingEvent";
+import { useGetAllEventsQuery } from "../dashboardApi";
 
 const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -32,10 +34,21 @@ const buildCalendar = (year: number, month: number) => {
 };
 
 export const Calendar: React.FC = () => {
-    // Assumes useThemeStyles exposes `isDark` alongside the token objects.
-    // If it doesn't yet, add `isDark: theme === "dark"` (or equivalent) to the hook.
+
+    const { data } = useGetAllEventsQuery()
     const { card, text, bg, border, isDark } = useThemeStyles();
     const today = new Date();
+    const eventDateKeys = useMemo(() => {
+        return new Set(
+            (data ?? [])
+                .map(event => event.date)
+                .filter(Boolean)
+                .map(date => {
+                    const parsedDate = new Date(date);
+                    return `${parsedDate.getFullYear()}-${String(parsedDate.getMonth() + 1).padStart(2, "0")}-${String(parsedDate.getDate()).padStart(2, "0")}`;
+                })
+        );
+    }, [data]);
     const [viewDate, setViewDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
     const [selectedDate, selectDate] = useState(today);
     const [isAdding, setAddState] = useState(false);
@@ -59,14 +72,14 @@ export const Calendar: React.FC = () => {
         selectedDate.getMonth() === viewDate.getMonth() &&
         selectedDate.getFullYear() === viewDate.getFullYear();
 
-    // Static, fully-spelled-out class names so Tailwind's compiler can see them.
-    const navButtonClasses = `cursor-pointer rounded-2xl border px-3 py-2 text-sm transition-all duration-150 ${border.primary} ${bg.secondary} ${
-        isDark ? "hover:bg-slate-700" : "hover:bg-slate-100"
-    } active:scale-95 active:brightness-90`;
+    const getDateKey = (dayValue: number, currentMonth: boolean) => {
+        if (!currentMonth) return "";
+        return `${viewDate.getFullYear()}-${String(viewDate.getMonth() + 1).padStart(2, "0")}-${String(dayValue).padStart(2, "0")}`;
+    };
 
     const dayCellHover = isDark ? "hover:bg-slate-800/70" : "hover:bg-slate-50";
 
-    return (
+    return data && (
         <div className="grid gap-6 xl:grid-cols-[1.45fr_0.9fr]">
             <CreateModal isOpen={isAdding} onClose={() => setAddState(false)} onSubmit={() => undefined} />
 
@@ -135,8 +148,9 @@ export const Calendar: React.FC = () => {
                         {days.map((day, index) => {
                             const today_ = isToday(day.value, day.currentMonth);
                             const selected = isSelected(day.value, day.currentMonth);
+                            const hasEvent = day.currentMonth && eventDateKeys.has(getDateKey(day.value, day.currentMonth));
 
-                            let cellClasses = `flex aspect-square items-center justify-center rounded-2xl border text-sm transition-all duration-150 `;
+                            let cellClasses = `relative flex aspect-square items-center justify-center rounded-2xl border text-sm transition-all duration-150 `;
 
                             if (!day.currentMonth) {
                                 cellClasses += isDark
@@ -165,7 +179,8 @@ export const Calendar: React.FC = () => {
                                     key={`${day.value}-${index}`}
                                     className={cellClasses}
                                 >
-                                    {day.value}
+                                    <span>{day.value}</span>
+                                    {hasEvent && <span className="absolute bottom-1.5 h-1.5 w-1.5 rounded-full bg-cyan-500" />}
                                 </div>
                             );
                         })}
@@ -176,6 +191,9 @@ export const Calendar: React.FC = () => {
             <div className="space-y-6">
                 <div className={card}>
                     <SelectedDayEvents date={selectedDate} />
+                </div>
+                <div className={card}>
+                    <UpcomingEvents events={data!}/>
                 </div>
             </div>
         </div>

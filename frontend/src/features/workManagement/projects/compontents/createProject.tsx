@@ -12,7 +12,7 @@ export const CreateProjectForm: React.FC<CreateFormProps> = ({ onClose }) => {
     const [name, setName] = useState("");
     const [state, setState] = useState<'on_hold' | 'active' | 'completetd'>("active");
     const token = localStorage.getItem('token');
-    const navigate = useNavigate()
+    const navigate = useNavigate();
     const { data, isLoading: userLoading, isFetching } = useGetMeQuery();
     const { text, input, button } = useThemeStyles();
     

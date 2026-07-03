@@ -1,13 +1,14 @@
-import React from "react";
-import { useGetTasksByProjectIdQuery } from "../../workManagementApi";
+import React, { useState } from "react";
+import { useDeleteTaskMutation, useGetTasksByProjectIdQuery, useSetStateTaskMutation, useUpdateTaskMutation } from "../../workManagementApi";
 import { useThemeStyles } from "../../../../hooks/useThemeStyles";
 import { Task, User } from "../../../../types/types";
 import { UserAvatar } from "./userAvatar";
+import { UpdateTask } from "./updateTask";
 
 interface ProjectTasksProps {
     projectId: string;
     projectName: string;
-    user : User;
+    user: User;
 }
 
 const priorityStyles: Record<Task['priority'], string> = {
@@ -17,14 +18,52 @@ const priorityStyles: Record<Task['priority'], string> = {
     urgent: 'bg-rose-500/10 text-rose-300 border-rose-500/20'
 };
 
-export const ProjectTasks: React.FC<ProjectTasksProps> = ({ projectId, projectName,user }) => {
-    const { text, isDark, border, bg, button } = useThemeStyles();
+const statusStyles: Record<Task['status'], string> = {
+    todo: 'bg-slate-500/10 text-slate-300 border-slate-500/20',
+    in_process: 'bg-cyan-500/10 text-cyan-300 border-cyan-500/20',
+    review: 'bg-violet-500/10 text-violet-300 border-violet-500/20',
+    done: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
+};
 
-    const { data: tasks, isLoading } = useGetTasksByProjectIdQuery({ projectId });
+const statusLabels: Record<Task['status'], string> = {
+    todo: 'Todo',
+    in_process: 'In Process',
+    review: 'Review',
+    done: 'Done',
+};
 
+export const ProjectTasks: React.FC<ProjectTasksProps> = ({ projectId, projectName, user }) => {
+    const { text, isDark, button } = useThemeStyles();
+    const [isUpdating, setUpdateState] = useState({ idOfChangin: '-1' });
+    const [updateTask] = useUpdateTaskMutation();
+    const [deleteTask] = useDeleteTaskMutation()
+    const { data: tasks, isLoading, refetch } = useGetTasksByProjectIdQuery({ projectId });
+    const [setState] = useSetStateTaskMutation();
+
+    const [updatingFeautures, setFeautures] = useState({
+        addedSubtasks: [] as { title: string, done: boolean }[],
+        removedSubtasks: [] as string[],
+        title: '',
+        status: '',
+        priority: ''
+    })
     if (!tasks) {
         return null;
     }
+
+    const handleDeleteTask = (taskId: string) => {
+        void deleteTask({ id: taskId, token: localStorage.getItem('token')! })
+            .unwrap()
+            .catch(console.error)
+    }
+
+    const handleUpdateTask = (taskId: string) => {
+        void updateTask({ task: updatingFeautures, id: taskId, token: localStorage.getItem('token')! })
+            .unwrap()
+            .catch(console.error)
+    }
+
+    const statusOptions: Task['status'][] = ['todo', 'in_process', 'review', 'done'];
 
     return (
         <div className={`border-b pb-4 last:border-none ${isDark ? 'border-slate-700/50' : 'border-slate-200/70'}`}>
@@ -42,10 +81,13 @@ export const ProjectTasks: React.FC<ProjectTasksProps> = ({ projectId, projectNa
                             <div className="space-y-2">
                                 <div className="flex items-center gap-3">
                                     <span className={`inline-flex h-2.5 w-2.5 rounded-full ${isDark ? 'bg-cyan-400' : 'bg-cyan-500'}`} />
-                                    <h3 className={`text-base font-semibold ${text.primary}`}>{task.title}</h3>
+                                    <h3 onInput={e => setFeautures({ ...updatingFeautures, priority: e.currentTarget.innerText })} suppressContentEditableWarning contentEditable={isUpdating.idOfChangin == task._id} className={`text-base font-semibold ${text.primary}`}>{task.title}</h3>
                                 </div>
-                                <div className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold tracking-[0.12em] uppercase ${priorityStyles[task.priority]}`}>
+                                <div onInput={e => setFeautures({ ...updatingFeautures, priority: e.currentTarget.innerText })} suppressContentEditableWarning contentEditable={isUpdating.idOfChangin == task._id} className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold tracking-[0.12em] uppercase ${priorityStyles[task.priority]}`}>
                                     {task.priority}
+                                </div>
+                                <div onInput={e => setFeautures({...updatingFeautures, status: e.currentTarget.innerText})} suppressContentEditableWarning contentEditable={isUpdating.idOfChangin == task._id} className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase ${statusStyles[task.status]}`}>
+                                    {statusLabels[task.status]}
                                 </div>
                             </div>
 
@@ -74,10 +116,35 @@ export const ProjectTasks: React.FC<ProjectTasksProps> = ({ projectId, projectNa
 
                         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div className="flex gap-2">
-                                {   (user.role == 'GOD' || user.role == 'TEAMLEAD' ) ? 
-                                    ( <><button type="button" className={`${button.secondary} text-sm`}>Update</button>
-                                    <button type="button" className={`${button.danger} text-sm`}>Delete</button> </>) :
-                                    <button>Done</button>
+                                {(user.role == 'GOD' || user.role == 'TEAMLEAD') ?
+                                    (<>
+                                        {isUpdating.idOfChangin != task._id! ?
+                                            <button onClick={() => setUpdateState({ idOfChangin: task._id! })} type="button" className={`${button.save} text-sm`}>Update</button>
+                                            : <button onClick={() => handleUpdateTask(task._id!)} type="button" className={`${button.save} text-sm`}>Save</button>
+                                        }
+                                        {isUpdating.idOfChangin != task._id! ?
+                                            <button onClick={() => handleDeleteTask(task._id!)} type="button" className={`${button.cancel} text-sm`}>Delete</button>
+                                            : <button onClick={() => { setUpdateState({ idOfChangin: "-1" }); refetch() }} type="button" className={`${button.cancel} text-sm`}>Cancel</button>
+                                        }
+                                    </>) :
+                                    (
+                                        <>
+                                            {(task.status !== 'done' && task.userIds.some(t => t == user._id)) && (
+                                                <div className="flex flex-wrap gap-2">
+                                                    {statusOptions.map(status => (
+                                                        <button
+                                                            key={status}
+                                                            type="button"
+                                                            onClick={() => void setState({ id: task._id!, state: status.toLowerCase() })}
+                                                            className={`${button.save} text-xs ${task.status === status ? 'ring-2 ring-cyan-400' : ''}`}
+                                                        >
+                                                            {statusLabels[status]}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </>
+                                    )
                                 }
                             </div>
                             <div className={`rounded-3xl border px-4 py-3 text-xs ${isDark ? 'border-slate-800/70 bg-slate-900/80 text-slate-400' : 'border-slate-200/70 bg-slate-100 text-slate-600'}`}>
@@ -85,29 +152,13 @@ export const ProjectTasks: React.FC<ProjectTasksProps> = ({ projectId, projectNa
                             </div>
                         </div>
 
-                        <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
-                            <div className="space-y-2">
-                                <p className={`text-sm font-medium ${text.primary}`}>Subtasks</p>
-                                {task.subtasks && task.subtasks.length > 0 ? (
-                                    <div className={`space-y-2 text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                                        {task.subtasks.slice(0, 3).map((subtask, index) => (
-                                            <div
-                                                key={`${subtask.title}-${index}`}
-                                                className={`flex items-center gap-2 rounded-2xl px-3 py-2 ${isDark ? 'bg-slate-900/80' : 'bg-slate-100'}`}
-                                            >
-                                                <span className={`inline-flex h-2.5 w-2.5 rounded-full ${subtask.done ? 'bg-emerald-400' : isDark ? 'bg-slate-500' : 'bg-slate-400'}`} />
-                                                <span className={subtask.done ? 'line-through' : ''}>{subtask.title}</span>
-                                            </div>
-                                        ))}
-                                        {task.subtasks.length > 3 && (
-                                            <p className={`text-xs ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>+{task.subtasks.length - 3} more subtasks</p>
-                                        )}
-                                    </div>
-                                ) : (
-                                    <p className={`text-sm ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>No subtasks yet</p>
-                                )}
-                            </div>
-                        </div>
+                        <UpdateTask 
+                            task={task}
+                            setFeautures={setFeautures}
+                            isUpdating={isUpdating}
+                            updatingFeautures={updatingFeautures}
+                        />
+                        
                     </div>
                 ))}
             </div>

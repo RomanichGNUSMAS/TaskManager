@@ -15,13 +15,13 @@ exports.TaskRepository = class {
     const recipientIds = [];
 
     if (Array.isArray(userIds)) {
-      recipientIds.push(...userIds.map(id => TaskRepository._toObjectId(id)));
+      recipientIds.push(...userIds.map(id => this._toObjectId(id)));
     }
     if (teamLeadId) {
-      recipientIds.push(TaskRepository._toObjectId(teamLeadId));
+      recipientIds.push(this._toObjectId(teamLeadId));
     }
 
-    const uniqueIds = [...new Set(recipientIds.map(id => id.toString()))].map(id => TaskRepository._toObjectId(id));
+    const uniqueIds = [...new Set(recipientIds.map(id => id.toString()))].map(id => this._toObjectId(id));
     if (!uniqueIds.length) return;
 
     await userModel.updateMany(
@@ -53,21 +53,22 @@ exports.TaskRepository = class {
     const ObjectId = mongoose.Types.ObjectId;
     if (!jwt) return 403;
 
-    const userIds = Array.isArray(rawData.userIds) ? rawData.userIds.map(id => TaskRepository._toObjectId(id)) : [];
-    const projectId = TaskRepository._toObjectId(rawData.projectId);
+    const userIds = Array.isArray(rawData.userIds) ? rawData.userIds.map(id => this._toObjectId(id)) : [];
+    const projectId = this._toObjectId(rawData.projectId);
     const task = new taskModel({
       ...rawData,
       userIds,
       projectId,
+      subtasks: rawData.subtasks.map(subtask => ({ ...subtask, _id: new mongoose.Types.ObjectId() }))
     });
 
     const savedTask = await task.save();
     const project = await projectModel.findById(projectId);
 
-    await TaskRepository._sendTaskNotifications({
+    await this._sendTaskNotifications({
       userIds: savedTask.userIds,
       teamLeadId: project?.teamLeadId,
-      message: await TaskRepository._buildTaskNotification(savedTask, 'was created'),
+      message: await this._buildTaskNotification(savedTask, 'was created'),
     });
 
     await projectModel.findByIdAndUpdate(projectId, {
@@ -78,14 +79,16 @@ exports.TaskRepository = class {
   }
 
   static async setStateToTask(taskId, state) {
+    const found = await taskModel.findOne({ _id: this._toObjectId(taskId)})
+    if(found.status == 'done') return;
     const task = await taskModel.findOneAndUpdate(
-      { _id: TaskRepository._toObjectId(taskId) },
+      { _id: this._toObjectId(taskId) },
       { $set: { status: state } },
       { new: true },
     );
     if (state == 'done')
-      await ProjectRepository.updateProject(
-        token,
+      await projectModel.findByIdAndUpdate(
+        taskId,
         {
           $inc: { completedCount: 1 },
         },
@@ -94,39 +97,61 @@ exports.TaskRepository = class {
     return task;
   }
 
-  static async updateTask(token, taskId, rawData) {
-    const jwt = verifyToken(token);
-    if (!jwt) return 403;
+  static async updateTask(token, taskId, payload) {
+    const jwt = verifyToken(token)
+    if(!jwt) return 403;
 
-    const task = await taskModel.findById(TaskRepository._toObjectId(taskId));
-    if (!task) return null;
+    const { title,status, priority, addedSubtasks, removedSubtasks } = payload;
+    const ObjectId = mongoose.Types.ObjectId;
 
-    const updatedData = { ...rawData };
-    if (Array.isArray(rawData.userIds)) {
-      updatedData.userIds = rawData.userIds.map(id => TaskRepository._toObjectId(id));
+    const updateFields = {};
+    if (status) updateFields.status = status;
+    if (title) updateFields.title = title;
+    if (priority) updateFields.priority = priority;
+
+    const mongoUpdate = {
+      $set: updateFields
+    };
+
+    if (addedSubtasks && addedSubtasks.length > 0) {
+      mongoUpdate.$push = {
+        subtasks: {
+          $each: addedSubtasks.map(sub => ({ ...sub, _id: new ObjectId() }))
+        }
+      };
     }
 
-    const updatedTask = await taskModel.findOneAndUpdate(
-      { _id: task._id },
-      updatedData,
-      { new: true },
+    if (removedSubtasks && removedSubtasks.length > 0) {
+      mongoUpdate.$pull = {
+        subtasks: {
+          _id: { $in: removedSubtasks.map(id => new ObjectId(id)) }
+        }
+      };
+    }
+    const task = await taskMode.findById(this._toObjectId(taskId))
+    if(task.status == 'done' && status != 'done') await projectModel.findByIdAndUpdate(this._toObjectId(task.projectId, {
+      $dec : { completedCount : 1}
+    }))
+    return await taskModel.findByIdAndUpdate(
+      taskId,
+      mongoUpdate,
+      { new: true }
     );
+  }
 
-    const project = await projectModel.findById(updatedTask.projectId);
-    await TaskRepository._sendTaskNotifications({
-      userIds: updatedTask.userIds,
-      teamLeadId: project?.teamLeadId,
-      message: await TaskRepository._buildTaskNotification(updatedTask, 'was updated'),
-    });
-
-    return updatedTask;
+  static async deleteSubtask(taskId, subtaskId) {
+    const result = await taskModel.updateOne(
+      { _id: this._toObjectId(taskId) },
+      { $pull: { subtasks: { _id: this._toObjectId(subtaskId) } } }
+    );
+    return;
   }
 
   static async deleteTask(token, taskId) {
     const jwt = verifyToken(token);
     if (!jwt) return 403;
 
-    const task = await taskModel.findById(TaskRepository._toObjectId(taskId));
+    const task = await taskModel.findById(this._toObjectId(taskId));
     if (!task) return null;
 
     const project = await projectModel.findById(task.projectId);
@@ -142,10 +167,10 @@ exports.TaskRepository = class {
       });
     }
 
-    await TaskRepository._sendTaskNotifications({
+    await this._sendTaskNotifications({
       userIds: task.userIds,
       teamLeadId: project?.teamLeadId,
-      message: await TaskRepository._buildTaskNotification(task, 'was deleted'),
+      message: await this._buildTaskNotification(task, 'was deleted'),
     });
 
     return result;

@@ -14,13 +14,13 @@ exports.ProjectRepository = class {
         const recipientIds = [];
 
         if (Array.isArray(ids)) {
-            recipientIds.push(...ids.map(id => ProjectRepository._toObjectId(id)));
+            recipientIds.push(...ids.map(id => this._toObjectId(id)));
         }
         if (teamLeadId) {
-            recipientIds.push(ProjectRepository._toObjectId(teamLeadId));
+            recipientIds.push(this._toObjectId(teamLeadId));
         }
 
-        const uniqueIds = [...new Set(recipientIds.map(id => id.toString()))].map(id => ProjectRepository._toObjectId(id));
+        const uniqueIds = [...new Set(recipientIds.map(id => id.toString()))].map(id => this._toObjectId(id));
         if (!uniqueIds.length) return;
 
         await userModel.updateMany(
@@ -57,7 +57,7 @@ exports.ProjectRepository = class {
     }
 
     static async getById(projectId) {
-        return await projectModel.findOne({ _id: ProjectRepository._toObjectId(projectId) });
+        return await projectModel.findOne({ _id: this._toObjectId(projectId) });
     }
 
     static async newProject(token, rawData) {
@@ -69,9 +69,9 @@ exports.ProjectRepository = class {
         const project = new projectModel(rawData);
         const savedProject = await project.save();
 
-        await ProjectRepository._sendNotifications({
+        await this._sendNotifications({
             teamLeadId: savedProject.teamLeadId,
-            message: await ProjectRepository._buildProjectNotification(savedProject, 'was created'),
+            message: await this._buildProjectNotification(savedProject, 'was created'),
         });
 
         return savedProject;
@@ -86,15 +86,15 @@ exports.ProjectRepository = class {
         }
 
         const project = await projectModel.findByIdAndUpdate(
-            ProjectRepository._toObjectId(projectId),
+            this._toObjectId(projectId),
             rawData,
             { new: true },
         );
         if (!project) return null;
 
-        await ProjectRepository._sendNotifications({
+        await this._sendNotifications({
             teamLeadId: project.teamLeadId,
-            message: await ProjectRepository._buildProjectNotification(project, 'was updated'),
+            message: await this._buildProjectNotification(project, 'was updated'),
         });
 
         return project;
@@ -102,7 +102,7 @@ exports.ProjectRepository = class {
 
     static async removeProject(token, projectId) {
         const jwt = verifyToken(token);
-        const mongooseId = ProjectRepository._toObjectId(projectId);
+        const mongooseId = this._toObjectId(projectId);
         if (!jwt) return 403;
         const user = await userModel.findOne({ email: jwt.email });
         if (!user) return 404;
@@ -113,9 +113,9 @@ exports.ProjectRepository = class {
         await taskModel.deleteMany({ projectId: mongooseId });
         await projectModel.findByIdAndDelete(mongooseId);
 
-        await ProjectRepository._sendNotifications({
+        await this._sendNotifications({
             teamLeadId: project.teamLeadId,
-            message: await ProjectRepository._buildProjectNotification(project, 'was deleted'),
+            message: await this._buildProjectNotification(project, 'was deleted'),
         });
 
         return project;

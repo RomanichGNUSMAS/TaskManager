@@ -48,6 +48,10 @@ export const useThemeStyles = () => {
         ? "rounded-2xl bg-slate-800 px-4 py-2.5 text-sm font-medium text-slate-200 transition hover:bg-slate-700"
         : "rounded-2xl bg-slate-200 px-4 py-2.5 text-sm font-medium text-slate-900 transition hover:bg-slate-300",
       danger: "rounded-2xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-500",
+      save: "rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2.5 text-sm font-semibold text-emerald-400 transition hover:bg-emerald-500/20",
+      cancel: isDark
+        ? "rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-sm font-semibold text-amber-300 transition hover:bg-amber-500/20"
+        : "rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-sm font-semibold text-amber-700 transition hover:bg-amber-500/20",
     },
   };
 };

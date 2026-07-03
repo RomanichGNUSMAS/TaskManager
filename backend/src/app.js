@@ -9,6 +9,7 @@ const { userRouter } = require('./routes/user.route');
 const cors = require('cors');
 const app = express();
 
+app.use(express.json())
 app.use(cors({
     origin: 'http://localhost:5173',
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -16,9 +17,7 @@ app.use(cors({
     credentials: true
 }));
 app.use('/', express.static(path.join(__dirname, '..', 'uploads')));
-app.options('/*any', cors()); 
 
-app.use(express.json())
 app.use('/auth',authRouter);
 app.use('/projects',projectRouter)
 app.use('/tasks',taskRouter)

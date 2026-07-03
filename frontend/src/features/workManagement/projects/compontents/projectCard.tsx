@@ -61,7 +61,7 @@ export const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
                     <div className="flex items-center gap-0.75 shrink-0">
                         {(!isUpdating && (me.role == 'GOD' || me.role == 'TEAMLEAD')) && <button
                             onClick={() => setUpdateState(true)}
-                            className={button.secondary}
+                            className={button.save}
                         >
                             Update
                         </button>}
@@ -69,14 +69,14 @@ export const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
                             !isUpdating ? (
                                 <button
                                     onClick={() => setDeleteState(true)}
-                                    className={button.danger}
+                                    className={button.cancel}
                                 >
                                     Delete
                                 </button>
                             ) : (
                                 <>
                                     <button
-                                        className="rounded-lg bg-green-950/50 px-3 py-1.5 text-xs font-medium text-green-400 transition hover:bg-green-950 border border-green-900/30"
+                                        className={`${button.save} px-3 py-1.5 text-xs`}
                                         onClick={() => {
                                             handleSaveChanges(project, localStorage.getItem('token')!);
                                             setUpdateState(false);
@@ -85,7 +85,7 @@ export const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
                                         Save
                                     </button>
                                     <button
-                                        className="rounded-lg bg-yellow-950/50 px-3 py-1.5 text-xs font-medium text-yellow-400 transition hover:bg-yellow-950 border border-yellow-900/30"
+                                        className={`${button.cancel} px-3 py-1.5 text-xs`}
                                         onClick={() => setUpdateState(false)}
                                     >
                                         Cancel

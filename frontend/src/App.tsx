@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useGetProjectsQuery } from "./features/dashboard/dashboardApi"
 import { Notifications } from "./components/notifications"
 
-const navItem = (to: string, isDark: boolean, collapsed: boolean) => ({ isActive }: { isActive: boolean }) => {
+const navItem = (to: string, isDark: boolean, collapsed?: boolean) => ({ isActive }: { isActive: boolean }) => {
   const activeClass = isActive
     ? 'bg-cyan-500 text-slate-950 shadow-lg shadow-cyan-500/20'
     : isDark

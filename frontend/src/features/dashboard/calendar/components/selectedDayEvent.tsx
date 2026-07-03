@@ -3,7 +3,7 @@ import { useGetEventByDayQuery } from "../../dashboardApi";
 import { useThemeStyles } from "../../../../hooks/useThemeStyles";
 
 export const SelectedDayEvents: React.FC<{ date: Date }> = ({ date }) => {
-    const { data, isLoading } = useGetEventByDayQuery({ date });
+    const { data, isLoading } = useGetEventByDayQuery({ date:date.toISOString() });
     const { card, text, border, bg } = useThemeStyles();
 
     if (isLoading) {
@@ -14,7 +14,7 @@ export const SelectedDayEvents: React.FC<{ date: Date }> = ({ date }) => {
         return (
             <div className={`${card} border-dashed ${border.primary}`}>
                 <h3 className={`text-lg font-semibold ${text.primary}`}>Events for</h3>
-                <p className={`mt-2 text-sm ${text.secondary}`}>{date.toDateString()}</p>
+                <p className={`mt-2 text-sm ${text.secondary}`}>{date.toDateString().split('.')[0]}</p>
                 <p className={`mt-4 rounded-3xl ${bg.secondary} px-4 py-3 text-sm ${text.secondary}`}>
                     No events scheduled for this day.
                 </p>

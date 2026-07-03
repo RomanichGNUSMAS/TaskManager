@@ -43,11 +43,16 @@ exports.EventRepository = class {
     }
 
     static async getDayEvents(dateInput) {
-        let dateStr = dateInput instanceof Date
-            ? dateInput.toISOString()
-            : String(dateInput).trim();
+        let dateOnly;
 
-        const dateOnly = dateStr.substring(0, 10);
+        if (dateInput instanceof Date) {
+            const year = dateInput.getFullYear();
+            const month = String(dateInput.getMonth() + 1).padStart(2, '0');
+            const day = String(dateInput.getDate()).padStart(2, '0');
+            dateOnly = `${year}-${month}-${day}`;
+        } else {
+            dateOnly = String(dateInput).trim().substring(0, 10);
+        }
 
         const isValidFormat = /^\d{4}-\d{2}-\d{2}$/.test(dateOnly);
         if (!isValidFormat) {
@@ -92,7 +97,29 @@ exports.EventRepository = class {
         });
 
         const savedEvent = await event.save();
+        const date = new Date(savedEvent.date);
 
+        const formattedDate = date.toLocaleDateString('ru-RU', {
+            timeZone: 'Asia/Yerevan',
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+
+        const formattedTime = date.toLocaleTimeString('ru-RU', {
+            timeZone: 'Asia/Yerevan',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        await this._sendNotifications({
+            ids: participantIds,
+            teamLeadId: savedEvent.teamLeadId,
+            message: await this._buildEventNotification(
+                savedEvent,
+                `${savedEvent.eventType} on ${formattedDate} в ${formattedTime}`
+            ),
+        });
 
         await userModel.updateMany({ _id: { $in: participantIds } },
             {
@@ -104,12 +131,6 @@ exports.EventRepository = class {
                 }
             }
         )
-        const date = new Date(savedEvent.date)
-        await this._sendNotifications({
-            ids: participantIds,
-            teamLeadId: savedEvent.teamLeadId,
-            message: await this._buildEventNotification(savedEvent, `${savedEvent.eventType} on ${date.toLocaleDateString()}:${date.toLocaleTimeString()}`),
-        });
 
         return savedEvent;
     }
@@ -131,22 +152,22 @@ exports.EventRepository = class {
         });
 
         const updatedEvent = await eventModel.findByIdAndUpdate(
-            EventRepository._toObjectId(eventId),
+            this._toObjectId(eventId),
             rawData,
             { new: true },
         );
 
-        await EventRepository._sendNotifications({
+        await this._sendNotifications({
             ids: participantIds,
             teamLeadId: updatedEvent.teamLeadId,
-            message: await EventRepository._buildEventNotification(updatedEvent, 'was updated'),
+            message: await this._buildEventNotification(updatedEvent, 'was updated'),
         });
 
         return updatedEvent;
     }
 
     static async deleteEvent(eventId) {
-        const event = await eventModel.findById(EventRepository._toObjectId(eventId));
+        const event = await eventModel.findById(this._toObjectId(eventId));
         if (!event) return null;
 
         await userModel.updateMany({ 'notifications.eventId': eventId },
@@ -155,12 +176,12 @@ exports.EventRepository = class {
             }
         );
 
-        const deleted = await eventModel.findByIdAndDelete(EventRepository._toObjectId(eventId));
+        const deleted = await eventModel.findByIdAndDelete(this._toObjectId(eventId));
 
-        await EventRepository._sendNotifications({
+        await this._sendNotifications({
             ids: event.participants,
             teamLeadId: event.teamLeadId,
-            message: await EventRepository._buildEventNotification(event, 'was deleted'),
+            message: await this._buildEventNotification(event, 'was deleted'),
         });
 
         return deleted;

@@ -27,5 +27,6 @@ export const {
     useAddTaskMutation,
     useSetStateTaskMutation,
     useUpdateTaskMutation,
-    useDeleteTaskMutation
+    useDeleteTaskMutation,
+    useDeleteSubtaskMutation
 } = workManagementApi;

@@ -2,12 +2,13 @@ const { TaskController } = require('../controllers/task.controller');
 const { AuthMiddleware } = require('../middlewares/auth.middleware');
 const { asyncHandler } = require('../utils/asyncHandler');
 
-const router = require('express').Router();
+const router = require('express').Router({ mergeParams: true });
 
 router.get('/:id',TaskController.getOneTask)
 router.post('/',AuthMiddleware.isAdmin,asyncHandler(TaskController.newTask))
 router.patch('/:id/state',asyncHandler(TaskController.setState))
 router.put('/:id/update', AuthMiddleware.isAdmin,asyncHandler(TaskController.updateTask))
 router.delete('/:id', AuthMiddleware.isAdmin,asyncHandler(TaskController.deleteTask))
+router.delete('/:taskId/subtasks/:subtaskId', AuthMiddleware.isAdmin, asyncHandler(TaskController.deleteSubtask))
 
 exports.taskRouter = router;

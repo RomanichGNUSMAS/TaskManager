@@ -51,6 +51,10 @@ exports.TaskService = class {
         }
     }
 
+    static async deleteSubtask(taskId,subtaskId) {
+        return TaskRepository.deleteSubtask(taskId,subtaskId)
+    }
+
     static async deleteTask(token, taskId) {
         const result = await TaskRepository.deleteTask(token, taskId);
         if (!result) throw new AppError('task not found', 404)

@@ -60,7 +60,7 @@ export type Task = {
     projectId: string,
     userIds : string[],
     status : 'todo' | 'in_process' | 'review' | 'done',
-    subtasks? : {title:string,done:boolean}[],
+    subtasks? : {title:string,done:boolean,_id:string}[],
     createdAt?:string,
     updatedAt?:string
 }

@@ -7,6 +7,7 @@ const taskSchema = new mongoose.Schema({
   userIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }],
   status: { type: String, enum: ['todo', 'in_process','review', 'done'], default: 'todo' },
   subtasks: [{
+    _id : { type: mongoose.Schema.Types.ObjectId },
     title: { type: String, required: true },
     done: { type: Boolean, default: false }
   }]
