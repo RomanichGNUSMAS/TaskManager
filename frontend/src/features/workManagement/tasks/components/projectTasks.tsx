@@ -4,33 +4,13 @@ import { useThemeStyles } from "../../../../hooks/useThemeStyles";
 import { Task, User } from "../../../../types/types";
 import { UserAvatar } from "./userAvatar";
 import { UpdateTask } from "./updateTask";
+import { priorityStyles, statusLabels, statusStyles } from "../../../../constants/tasks";
 
 interface ProjectTasksProps {
     projectId: string;
     projectName: string;
     user: User;
 }
-
-const priorityStyles: Record<Task['priority'], string> = {
-    low: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
-    medium: 'bg-amber-500/10 text-amber-300 border-amber-500/20',
-    high: 'bg-orange-500/10 text-orange-300 border-orange-500/20',
-    urgent: 'bg-rose-500/10 text-rose-300 border-rose-500/20'
-};
-
-const statusStyles: Record<Task['status'], string> = {
-    todo: 'bg-slate-500/10 text-slate-300 border-slate-500/20',
-    in_process: 'bg-cyan-500/10 text-cyan-300 border-cyan-500/20',
-    review: 'bg-violet-500/10 text-violet-300 border-violet-500/20',
-    done: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
-};
-
-const statusLabels: Record<Task['status'], string> = {
-    todo: 'Todo',
-    in_process: 'In Process',
-    review: 'Review',
-    done: 'Done',
-};
 
 export const ProjectTasks: React.FC<ProjectTasksProps> = ({ projectId, projectName, user }) => {
     const { text, isDark, button } = useThemeStyles();
@@ -63,7 +43,10 @@ export const ProjectTasks: React.FC<ProjectTasksProps> = ({ projectId, projectNa
             .catch(console.error)
     }
 
-    const statusOptions: Task['status'][] = ['todo', 'in_process', 'review', 'done'];
+    const statusOptions: Task['status'][] =
+        (user.role === 'GOD' || user.role === 'TEAMLEAD')
+            ? ['todo', 'in_process', 'review', 'done']
+            : ['in_process', 'done'];
 
     return (
         <div className={`border-b pb-4 last:border-none ${isDark ? 'border-slate-700/50' : 'border-slate-200/70'}`}>
@@ -79,15 +62,39 @@ export const ProjectTasks: React.FC<ProjectTasksProps> = ({ projectId, projectNa
                     >
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                             <div className="space-y-2">
-                                <div className="flex items-center gap-3">
-                                    <span className={`inline-flex h-2.5 w-2.5 rounded-full ${isDark ? 'bg-cyan-400' : 'bg-cyan-500'}`} />
-                                    <h3 onInput={e => setFeautures({ ...updatingFeautures, priority: e.currentTarget.innerText })} suppressContentEditableWarning contentEditable={isUpdating.idOfChangin == task._id} className={`text-base font-semibold ${text.primary}`}>{task.title}</h3>
-                                </div>
-                                <div onInput={e => setFeautures({ ...updatingFeautures, priority: e.currentTarget.innerText })} suppressContentEditableWarning contentEditable={isUpdating.idOfChangin == task._id} className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold tracking-[0.12em] uppercase ${priorityStyles[task.priority]}`}>
-                                    {task.priority}
-                                </div>
-                                <div onInput={e => setFeautures({...updatingFeautures, status: e.currentTarget.innerText})} suppressContentEditableWarning contentEditable={isUpdating.idOfChangin == task._id} className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase ${statusStyles[task.status]}`}>
-                                    {statusLabels[task.status]}
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-3">
+                                        <span className={`inline-flex h-2.5 w-2.5 rounded-full ${isDark ? 'bg-cyan-400' : 'bg-cyan-500'}`} />
+                                        <h3
+                                            onInput={e => setFeautures({ ...updatingFeautures, title: e.currentTarget.innerText })}
+                                            suppressContentEditableWarning
+                                            contentEditable={isUpdating.idOfChangin === task._id}
+                                            className={`text-base font-semibold ${text.primary}`}
+                                        >
+                                            {task.title}
+                                        </h3>
+                                    </div>
+
+                                    <div
+                                        onInput={e => setFeautures({ ...updatingFeautures, priority: e.currentTarget.innerText.toUpperCase() })}
+                                        suppressContentEditableWarning
+                                        contentEditable={isUpdating.idOfChangin === task._id}
+                                        className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold tracking-[0.12em] uppercase ${priorityStyles[task.priority]}`}
+                                    >
+                                        {task.priority}
+                                    </div>
+
+                                    <div
+                                        onInput={e => {
+                                            const formattedStatus = e.currentTarget.innerText.toUpperCase().replace(/\s+/g, '_');
+                                            setFeautures({ ...updatingFeautures, status: formattedStatus.toLowerCase() });
+                                        }}
+                                        suppressContentEditableWarning
+                                        contentEditable={isUpdating.idOfChangin === task._id}
+                                        className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase ${statusStyles[task.status]}`}
+                                    >
+                                        {statusLabels[task.status]}
+                                    </div>
                                 </div>
                             </div>
 
@@ -151,14 +158,12 @@ export const ProjectTasks: React.FC<ProjectTasksProps> = ({ projectId, projectNa
                                 {task.subtasks?.length ?? 0} subtasks
                             </div>
                         </div>
-
-                        <UpdateTask 
+                        <UpdateTask
                             task={task}
                             setFeautures={setFeautures}
                             isUpdating={isUpdating}
                             updatingFeautures={updatingFeautures}
                         />
-                        
                     </div>
                 ))}
             </div>

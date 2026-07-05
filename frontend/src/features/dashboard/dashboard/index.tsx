@@ -3,7 +3,7 @@ import { useGetProjectsQuery } from "../dashboardApi";
 import { useThemeStyles } from "../../../hooks/useThemeStyles";
 import { Link } from "react-router-dom";
 
-function getDaysAgo(pastDate:Date) {
+function getDaysAgo(pastDate:string) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   
@@ -16,7 +16,6 @@ function getDaysAgo(pastDate:Date) {
   
   return Math.round(diffInMs / msInDay);
 }
-
 
 
 export const Dashboard: React.FC = () => {

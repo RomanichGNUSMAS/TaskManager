@@ -23,7 +23,7 @@ export const Notifications: React.FC<{ user: User }> = ({ user }) => {
                             <div className="min-w-0 space-y-3">
                                 <p className={`text-[10px] uppercase tracking-[0.3em] ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Notification</p>
                                 {user.notifications.length > 0 ? (
-                                    <div className="space-y-3">
+                                    <div className="space-y-3 scroll-auto">
                                                 {user.notifications.map(notification => (
                                             <div onClick={() => markAsRead({ userId: user._id, notificationId: notification._id })} key={notification.createdAt} className={`rounded-3xl border p-3 text-[12px] leading-5 shadow-sm transition-colors ${isDark ? 'border-slate-700 bg-slate-900/90 text-slate-100 shadow-slate-950/10' : 'border-slate-200 bg-slate-50 text-slate-900 shadow-slate-200/80'}`}>
                                                 <p className={`text-xs font-semibold uppercase tracking-[0.16em] ${text.secondary}`}>

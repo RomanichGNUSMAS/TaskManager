@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import type { User } from "../../../types/types";
 import { useSignInMutation } from "../authApi";
@@ -8,26 +8,25 @@ import { useThemeStyles } from "../../../hooks/useThemeStyles";
 export const Signin: React.FC = () => {
     const { register, formState: { errors }, handleSubmit } = useForm<User>();
     const [signIn] = useSignInMutation();
+    const [error,setError] = useState('')
     const nav = useNavigate()
     const { card, text, input, button, isDark } = useThemeStyles();
     const handleLog: SubmitHandler<User> = (data) => {
         void signIn(data)
             .unwrap()
             .then(async (res) => {
-                await localStorage.setItem('token', res as string);
-                setTimeout(() => {
-                    nav('/settings/profile', { replace : true })
-                }, 15)
+                localStorage.setItem('token', res as string);
             })
-            .catch(console.log)
+            .then(() => void nav('/settings/profile'))
+            .catch(err => setError(err.message))
     }
     return (
         <div className={`min-h-screen flex items-center justify-center px-4 ${isDark ? 'bg-slate-950' : 'bg-slate-50'}`}>
             <div className={`w-full max-w-md ${card}`}>
                 <h2 className={`text-2xl font-bold mb
-                    
                     6 ${text.primary}`}>Sign In</h2>
                 <form onSubmit={handleSubmit(handleLog)} className="space-y-4">
+                    {error && <p className="text-2xl text-red-500">{error}</p>}
                     {Object.values(errors).map((error, idx) =>
                         <p key={idx} className="text-red-500 text-sm">{error.message}</p>
                     )}

@@ -24,6 +24,14 @@ export type Notification = {
     eventId?:string
 }
 
+export type ChartSlice = { name: string; value: number; color: string };
+
+export type TasksByProjectDatum = {
+  name: string;
+  completed: number;
+  total: number;
+};
+
 export type Event = {
     _id:string,
     title : string,

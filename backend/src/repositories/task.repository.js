@@ -50,16 +50,21 @@ exports.TaskRepository = class {
 
   static async newTask(token, rawData) {
     const jwt = verifyToken(token);
-    const ObjectId = mongoose.Types.ObjectId;
     if (!jwt) return 403;
 
+    const ObjectId = mongoose.Types.ObjectId;
     const userIds = Array.isArray(rawData.userIds) ? rawData.userIds.map(id => this._toObjectId(id)) : [];
     const projectId = this._toObjectId(rawData.projectId);
+    
+    const safeSubtasks = Array.isArray(rawData.subtasks) 
+      ? rawData.subtasks.map(subtask => ({ ...subtask, _id: new mongoose.Types.ObjectId() }))
+      : [];
+
     const task = new taskModel({
       ...rawData,
       userIds,
       projectId,
-      subtasks: rawData.subtasks.map(subtask => ({ ...subtask, _id: new mongoose.Types.ObjectId() }))
+      subtasks: safeSubtasks
     });
 
     const savedTask = await task.save();
@@ -79,64 +84,84 @@ exports.TaskRepository = class {
   }
 
   static async setStateToTask(taskId, state) {
-    const found = await taskModel.findOne({ _id: this._toObjectId(taskId)})
-    if(found.status == 'done') return;
+    const found = await taskModel.findOne({ _id: this._toObjectId(taskId) });
+    if (!found) return null;
+
+    if (found.status && found.status.toLowerCase() === 'done') return found;
+
     const task = await taskModel.findOneAndUpdate(
       { _id: this._toObjectId(taskId) },
       { $set: { status: state } },
       { new: true },
     );
-    if (state == 'done')
+
+    if (state && state.toLowerCase() === 'done') {
       await projectModel.findByIdAndUpdate(
-        taskId,
-        {
-          $inc: { completedCount: 1 },
-        },
-        task.projectId,
+        task.projectId, 
+        { $inc: { completedCount: 1 } }
       );
+    }
     return task;
   }
 
   static async updateTask(token, taskId, payload) {
-    const jwt = verifyToken(token)
-    if(!jwt) return 403;
+    const jwt = verifyToken(token);
+    if (!jwt) return 403;
 
-    const { title,status, priority, addedSubtasks, removedSubtasks } = payload;
+    const { title, status, priority, addedSubtasks, removedSubtasks } = payload;
     const ObjectId = mongoose.Types.ObjectId;
-
     const updateFields = {};
+
     if (status) updateFields.status = status;
     if (title) updateFields.title = title;
     if (priority) updateFields.priority = priority;
 
-    const mongoUpdate = {
-      $set: updateFields
-    };
+    const mongoUpdate = {};
+    if (Object.keys(updateFields).length > 0) {
+      mongoUpdate.$set = updateFields;
+    }
 
     if (addedSubtasks && addedSubtasks.length > 0) {
       mongoUpdate.$push = {
-        subtasks: {
-          $each: addedSubtasks.map(sub => ({ ...sub, _id: new ObjectId() }))
-        }
+        subtasks: { $each: addedSubtasks.map(sub => ({ ...sub, _id: new ObjectId() })) }
       };
     }
 
-    if (removedSubtasks && removedSubtasks.length > 0) {
-      mongoUpdate.$pull = {
-        subtasks: {
-          _id: { $in: removedSubtasks.map(id => new ObjectId(id)) }
-        }
-      };
+    const currentTask = await taskModel.findById(this._toObjectId(taskId));
+    if (!currentTask) return 404;
+
+    const oldStatus = currentTask.status ? currentTask.status.toLowerCase() : '';
+    const newStatus = status ? status.toLowerCase() : '';
+
+    if (status) {
+      if (oldStatus === 'done' && newStatus !== 'done') {
+        await projectModel.findByIdAndUpdate(
+          this._toObjectId(currentTask.projectId),
+          { $inc: { completedCount: -1 } }
+        );
+      } else if (oldStatus !== 'done' && newStatus === 'done') {
+        await projectModel.findByIdAndUpdate(
+          this._toObjectId(currentTask.projectId),
+          { $inc: { completedCount: 1 } }
+        );
+      }
     }
-    const task = await taskMode.findById(this._toObjectId(taskId))
-    if(task.status == 'done' && status != 'done') await projectModel.findByIdAndUpdate(this._toObjectId(task.projectId, {
-      $dec : { completedCount : 1}
-    }))
-    return await taskModel.findByIdAndUpdate(
-      taskId,
+
+    const updatedTask = await taskModel.findByIdAndUpdate(
+      this._toObjectId(taskId),
       mongoUpdate,
       { new: true }
     );
+
+    if (removedSubtasks && removedSubtasks.length > 0 && updatedTask) {
+      return await taskModel.findByIdAndUpdate(
+        this._toObjectId(taskId),
+        { $pull: { subtasks: { _id: { $in: removedSubtasks.map(id => new ObjectId(id)) } } } },
+        { new: true }
+      );
+    }
+
+    return updatedTask;
   }
 
   static async deleteSubtask(taskId, subtaskId) {
@@ -157,7 +182,7 @@ exports.TaskRepository = class {
     const project = await projectModel.findById(task.projectId);
     const result = await taskModel.deleteOne({ _id: task._id });
 
-    if (task.status === 'done') {
+    if (task.status && task.status.toLowerCase() === 'done') {
       await projectModel.findByIdAndUpdate(task.projectId, {
         $inc: { completedCount: -1, tasksCount: -1 },
       });

@@ -95,8 +95,17 @@ export const MyProfile = () => {
                         <p className={`text-lg font-semibold ${text.primary}`}>{data.name} {data.surname}</p>
                         <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-blue-600'}`}>Team member since {formatDate(data.createdAt)}</p>
                     </div>
-                    {(isSomethingChanges || isImageChanged) && <button onClick={handleSaveChange}>save changes</button>}
-                    {
+                    {(isSomethingChanges || isImageChanged) && (
+                        <button
+                            className={`${isDark
+                                    ? 'bg-green-950/30 border-green-600 text-green-400'
+                                    : 'bg-green-100 border-green-500 text-green-700'
+                                } border-1 p-[5px] mx-10 font-mono rounded-2xl`}
+                            onClick={handleSaveChange}
+                        >
+                            save changes
+                        </button>
+                    )}                    {
                         error?.split('?').map(err =>
                             <p key={err}>{err}</p>
                         ) || error
