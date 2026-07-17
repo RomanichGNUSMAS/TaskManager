@@ -1,1 +1,1 @@
-export const domain = '10.129.208.174';
+export const domain = 'localhost';

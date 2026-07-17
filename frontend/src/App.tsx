@@ -6,6 +6,8 @@ import { Notifications } from "./components/notifications"
 import { useThemeStyles } from "./hooks/useThemeStyles"
 import { Navigation } from "./components/navigations"
 import { ChevronLeft, ChevronRight } from "lucide-react"
+import { QuickMetrics } from "./components/quickMetrics"
+import { UserCard } from "./components/userCard"
 
 export const App = () => {
   const token = localStorage.getItem('token')
@@ -79,60 +81,13 @@ export const App = () => {
         </button>
 
         {/* User card */}
-        <div className={`px-4 py-4 ${isDark ? 'border-slate-800/60' : 'border-slate-200/60'}`} style={{ borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: isDark ? 'rgba(71, 85, 105, 0.6)' : 'rgba(203, 213, 225, 0.6)' }}>
-          <div className={`flex items-center gap-3 ${collapsed ? 'justify-center' : ''}`}>
-            <div className={`h-9 w-9 shrink-0 rounded-2xl p-2 ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`}>
-              <div className="h-full w-full rounded-xl bg-gradient-to-br from-cyan-500 to-sky-500" />
-            </div>
-            {!collapsed && (
-              <div className="min-w-0">
-                <p className={`text-xs truncate ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Signed in as</p>
-                <p className={`text-sm font-semibold truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>{data.name || data.email}</p>
-              </div>
-            )}
-          </div>
-          {!collapsed && (
-            <div className={`mt-3 rounded-2xl px-3 py-2.5 text-xs space-y-1.5 ${isDark ? 'bg-slate-900/80 text-slate-400' : 'bg-slate-100/80 text-slate-600'}`}>
-              <div className="flex justify-between"><span>Role</span><span className={isDark ? 'text-slate-200' : 'text-slate-900'}>{data.role}</span></div>
-              <div className="flex justify-between"><span>Team</span><span className={isDark ? 'text-slate-200' : 'text-slate-900'}>Product</span></div>
-              <div className="flex justify-between"><span>Status</span><span className="text-emerald-400">● Active</span></div>
-            </div>
-          )}
-        </div>
+        <UserCard data={data} collapsed={collapsed} />
 
         {/* Navigation */}
         <Navigation data={data} isDark={isDark} collapsed={collapsed} />
 
         {/* Quick metrics pinned to bottom */}
-        <div className={`px-4 py-4 ${isDark ? 'border-slate-800/60' : 'border-slate-200/60'}`} style={{ borderTopWidth: '1px', borderTopStyle: 'solid', borderTopColor: isDark ? 'rgba(71, 85, 105, 0.6)' : 'rgba(203, 213, 225, 0.6)' }}>
-          {!collapsed && (
-            <>
-              <p className={`mb-3 text-[10px] uppercase tracking-[0.28em] ${isDark ? 'text-slate-600' : 'text-slate-500'}`}>Quick Metrics</p>
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { label: 'Tasks', value: projects.projects.reduce((t,a) => t + a.tasksCount,0) },
-                  { label: 'Projects', value: projects.projects.length },
-                  { label: 'Due Soon', value: projects.projects.reduce((t,a) => {
-                    if(a.state == 'on_hold') return t + 1
-                    return t;
-                  },0) },
-                ].map(item => (
-                  <div key={item.label} className={`rounded-2xl px-2 py-2.5 text-center ${isDark ? 'bg-slate-900/80' : 'bg-slate-100/80'}`}>
-                    <p className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>{item.value}</p>
-                    <p className={`text-[9px] uppercase tracking-wide mt-0.5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{item.label}</p>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-          {collapsed && (
-            <div className={`rounded-2xl py-2.5 text-center ${isDark ? 'bg-slate-900/80' : 'bg-slate-100/80'}`}>
-              <p className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                {projects.projects.reduce((t,a) => t + a.tasksCount,0)}
-              </p>
-            </div>
-          )}
-        </div>
+        <QuickMetrics projects={projects.projects} collapsed={collapsed}/>
       </aside>
 
       {/* ── MAIN OUTLET ── remaining space ──────────────────────────────── */}
