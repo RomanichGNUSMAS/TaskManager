@@ -9,7 +9,7 @@ import { useGetTasks } from '../dashboard/hooks/useGetTasks';
 import { useProjectStatusData, useTaskPriorityData, useTasksByProject, useTaskStatusData } from '../dashboard/hooks/getPriorities';
 import renderProgressParts from '../dashboard/utils/renderProgressParts';
 
-export const Progress = () => {
+export default function Progress () {
   const { card, text, bg} = useThemeStyles();
 
   const { data: projectsResponse, isLoading: isProjectsLoading } = useGetAllProjectsQuery({

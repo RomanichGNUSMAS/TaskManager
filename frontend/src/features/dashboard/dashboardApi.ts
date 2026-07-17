@@ -1,11 +1,12 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { FetchProjectsResponse } from "../workManagement/projectMethods";
 import { Event } from "../../types/types";
+import { domain } from "../../constants/hosting";
 
 
 export const dashboardApi = createApi({
     reducerPath: 'dashboardApi',
-    baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:3001' }),
+    baseQuery: fetchBaseQuery({ baseUrl: `http://${domain}:3001` }),
     endpoints: (build) => ({
         GetProjects: build.query<FetchProjectsResponse, void>({
             query: () => ({

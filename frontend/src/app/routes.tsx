@@ -1,3 +1,4 @@
+import React, { Suspense } from "react";
 import { createBrowserRouter } from "react-router-dom";
 import { App } from "../App";
 import { Signin } from "../features/auth/signin";
@@ -8,23 +9,23 @@ import { Settings } from "../features/auth/settings";
 import { Tasks } from "../features/workManagement/tasks";
 import { Projects } from "../features/workManagement/projects";
 import { Calendar } from "../features/dashboard/calendar";
-import { Progress } from "../features/dashboard/progress";
 import { Appearance } from "../features/auth/settings/components/appearance";
 import { Security } from "../features/auth/settings/components/security";
+const Progress = React.lazy(() => import('../features/dashboard/progress'));
 
 export const routes = createBrowserRouter([
     {
-        path: 'auth/signin', 
+        path: 'auth/signin',
         element: <Signin />
     },
     {
-        path: 'auth/signup', 
+        path: 'auth/signup',
         element: <Signup />
     },
 
     {
-        path: '/', 
-        element: <App />, 
+        path: '/',
+        element: <App />,
         children: [
             {
                 path: 'dashboard', element: <Dashboard />
@@ -52,7 +53,9 @@ export const routes = createBrowserRouter([
                 path: 'calendar', element: <Calendar />
             },
             {
-                path: 'progress', element: <Progress />
+                path: 'progress', element: <Suspense fallback={<div>Loading…</div>}>
+                    <Progress />
+                </Suspense>
             }
         ]
     }

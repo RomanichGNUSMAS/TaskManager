@@ -131,15 +131,15 @@ export const MyProfile = () => {
                         <div className={`mt-3 space-y-3 text-sm ${isDark ? 'text-slate-300' : 'text-blue-900'}`}>
                             <div className="flex items-center justify-between gap-2">
                                 <span className={isDark ? 'text-slate-500' : 'text-blue-600'}>Full name</span>
-                                <span ref={name} onInput={() => setChange(true)} contentEditable className={`font-medium ${text.primary}`}>{data.name} {data.surname}</span>
+                                <span ref={name} onInput={() => setChange(true)} contentEditable  suppressContentEditableWarning className={`font-medium ${text.primary}`}>{data.name} {data.surname}</span>
                             </div>
                             <div className="flex items-center justify-between gap-2">
                                 <span className={isDark ? 'text-slate-500' : 'text-blue-600'}>Email address</span>
-                                <span ref={email} onInput={() => setChange(true)} contentEditable className={`font-medium ${text.primary}`}>{data.email}</span>
+                                <span ref={email} onInput={() => setChange(true)} contentEditable suppressContentEditableWarning  className={`font-medium ${text.primary}`}>{data.email}</span>
                             </div>
                             <div className="flex items-center justify-between gap-2">
                                 <span className={isDark ? 'text-slate-500' : 'text-blue-600'}>Phone number</span>
-                                <span ref={num} onInput={() => setChange(true)} contentEditable className={`font-medium ${text.primary}`}>{data.phone}</span>
+                                <span ref={num} onInput={() => setChange(true)} contentEditable suppressContentEditableWarning className={`font-medium ${text.primary}`}>{data.phone}</span>
                             </div>
                             <div className="flex items-center justify-between gap-2">
                                 <span className={isDark ? 'text-slate-500' : 'text-blue-600'}>Role</span>

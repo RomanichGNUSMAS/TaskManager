@@ -1,12 +1,21 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { User } from "../../types/types";
 import { PasswordChange } from "./settings/components/security";
+import { domain } from "../../constants/hosting";
 
 
 export const authApi = createApi({
     reducerPath: 'auth',
     baseQuery: fetchBaseQuery({
-        baseUrl: 'http://localhost:3001'
+        baseUrl: `http://${domain}:3001`,
+        prepareHeaders: (headers) => {
+            const token = localStorage.getItem('token');
+            if (token && token !== 'undefined' && token !== 'null') {
+                headers.set('authorization', `Bearer ${token}`);
+            }
+
+            return headers;
+        },
     }),
     endpoints: build => ({
         SignIn: build.mutation<string | { message: string }, User>({
@@ -27,15 +36,19 @@ export const authApi = createApi({
         }),
 
         GetMe: build.query<User, void>({
-            query: () => {
-                const token = localStorage.getItem('token');
-                return {
-                    url: '/auth/me',
-                    headers: { Authorization: `Bearer ${token}` },
+            queryFn: async (arg, api, extraOptions, baseQuery) => {
+                const result = await baseQuery('/auth/me');
+
+                if (result?.error?.status === 401 || result?.error?.status === 403) {
+                    localStorage.removeItem('token');
+                    return { error: result.error };
                 }
+
+                return { data: result.data as User };
             },
             providesTags: ['theme', 'image', 'log', 'updateUser', 'notification'] as any
         }),
+
         SetPhoto: build.mutation<void, { file: FormData, id: string }>({
             query: ({ file, id }) => ({
                 url: `/users/${id}/avatar`,

@@ -5,6 +5,7 @@ import { SelectedDayEvents } from "./components/selectedDayEvent";
 import { CreateModal } from "./components/createModal";
 import { UpcomingEvents } from "./components/upcomingEvent";
 import { useGetAllEventsQuery } from "../dashboardApi";
+import { useGetMeQuery } from "../../auth/authApi";
 
 const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -36,6 +37,7 @@ const buildCalendar = (year: number, month: number) => {
 export const Calendar: React.FC = () => {
 
     const { data } = useGetAllEventsQuery()
+    const { data: me, isLoading : IsUserLoading } = useGetMeQuery(); 
     const { card, text, bg, border, isDark } = useThemeStyles();
     const today = new Date();
     const eventDateKeys = useMemo(() => {
@@ -58,6 +60,8 @@ export const Calendar: React.FC = () => {
         [viewDate],
     );
 
+    if(IsUserLoading) return <p>Loading...</p>
+
     const currentMonthLabel = `${monthName(viewDate.getMonth())} ${viewDate.getFullYear()}`;
 
     const isToday = (dayValue: number, currentMonth: boolean) =>
@@ -79,7 +83,7 @@ export const Calendar: React.FC = () => {
 
     const dayCellHover = isDark ? "hover:bg-slate-800/70" : "hover:bg-slate-50";
 
-    return data && (
+    return data && me && (
         <div className="grid gap-6 xl:grid-cols-[1.45fr_0.9fr]">
             <CreateModal isOpen={isAdding} onClose={() => setAddState(false)} onSubmit={() => undefined} />
 
@@ -97,14 +101,14 @@ export const Calendar: React.FC = () => {
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <button
+                        {me.role !== 'DEVELOPER' && <button
                             type="button"
                             onClick={() => setAddState(true)}
                             className={`flex cursor-pointer items-center gap-1.5 rounded-2xl bg-cyan-500 px-3.5 py-2 text-sm font-medium text-white transition-all duration-150 hover:bg-cyan-600 active:scale-95`}
                         >
                             <Plus className="h-4 w-4" />
                             Add Event
-                        </button>
+                        </button>}
 
                         <div className={`flex items-center gap-1 rounded-2xl border p-1 ${border.primary}`}>
                             <button
