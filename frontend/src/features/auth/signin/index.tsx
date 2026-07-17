@@ -1,14 +1,15 @@
 import React, { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import type { User } from "../../../types/types";
-import { useSignInMutation } from "../authApi";
-import { useNavigate } from "react-router-dom";
+import { useGetUsersByRoleQuery, useSignInMutation } from "../authApi";
+import { Link, useNavigate } from "react-router-dom";
 import { useThemeStyles } from "../../../hooks/useThemeStyles";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 
 export const Signin: React.FC = () => {
     const { register, formState: { errors }, handleSubmit } = useForm<User>();
     const [signIn] = useSignInMutation();
+    const { data: gods } = useGetUsersByRoleQuery({ role: "GOD" });
     const [error, setError] = useState('');
     const nav = useNavigate();
     const { card, text, input, button, isDark } = useThemeStyles();
@@ -17,8 +18,8 @@ export const Signin: React.FC = () => {
         try {
             const res = await signIn(data).unwrap();
             setError('');
-            localStorage.setItem('token', res as unknown as string);
-            nav('/settings/profile')
+            localStorage.setItem('token',res as unknown as string)
+            nav('/settings/profile');
         } catch (err) {
             const fetchError = err as FetchBaseQueryError;
             const message =
@@ -29,7 +30,7 @@ export const Signin: React.FC = () => {
         }
     };
 
-    return (
+    return gods && (
         <div className={`min-h-screen flex items-center justify-center px-4 ${isDark ? 'bg-slate-950' : 'bg-slate-50'}`}>
             <div className={`w-full max-w-md ${card}`}>
                 <h2 className={`text-2xl font-bold mb-6 ${text.primary}`}>Sign In</h2>
@@ -53,6 +54,7 @@ export const Signin: React.FC = () => {
                             className={input}
                         />
                     </div>
+                    {gods.length == 0 && <Link to="/auth/signup" className="text-blue-400">Join us as GOD</Link>}
                     <button type="submit" className={button.primary}>
                         Log In
                     </button>

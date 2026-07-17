@@ -18,13 +18,8 @@ export const authApi = createApi({
         },
     }),
     endpoints: build => ({
-        SignIn: build.mutation<string | { message: string }, User>({
-            query: (user) => ({
-                url: '/auth/signin',
-                body: user,
-                method: 'POST'
-            }),
-            invalidatesTags: ['log'] as any
+        SignIn: build.mutation<{ token: string }, Partial<User>>({
+            query: (user) => ({ url: '/auth/signin', method: 'POST', body: user }),
         }),
 
         SignUp: build.mutation<User, User>({
@@ -38,15 +33,14 @@ export const authApi = createApi({
         GetMe: build.query<User, void>({
             queryFn: async (arg, api, extraOptions, baseQuery) => {
                 const result = await baseQuery('/auth/me');
-
-                if (result?.error?.status === 401 || result?.error?.status === 403) {
+                if (result?.error?.status === 401 || result?.error?.status === 403 || result?.error?.status === 404 || result?.error?.status === 400) {
                     localStorage.removeItem('token');
                     return { error: result.error };
                 }
 
                 return { data: result.data as User };
             },
-            providesTags: ['theme', 'image', 'log', 'updateUser', 'notification'] as any
+            providesTags: ['theme', 'image', 'updateUser', 'notification'] as any
         }),
 
         SetPhoto: build.mutation<void, { file: FormData, id: string }>({
@@ -92,7 +86,7 @@ export const authApi = createApi({
         ChangePassword: build.mutation<void, PasswordChange & { id: string }>({
             query: (passwords) => ({
                 url: `/users/${passwords.id}/password`,
-                methods: 'PATCH',
+                method: 'PATCH',
                 body: passwords
             })
         }),

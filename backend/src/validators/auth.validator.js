@@ -5,6 +5,7 @@ const registerScheme = z.object({
     surname: z.string(),
     password: z.string().trim().min(8,"minimum is 8"),
     email: z.string().email(),
+    phone: z.number()
 })
 
 const loginScheme = z.object({
